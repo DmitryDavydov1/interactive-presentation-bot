@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Component
@@ -31,6 +33,14 @@ public class CreateRoomCommand implements Command {
 
         String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
+        if (creatorTheRoom.getStatus().equals("создаю пароль")) {
+            List<Room> rooms = creatorTheRoom.getRoom();
+            Room roomWithStatusTrue = rooms.stream()
+                    .filter(Room::isStatus) // Фильтруем по статусу
+                    .findFirst().get();
+            roomWithStatusTrue.setPassword(update.getMessage().getText());
+            roomRepository.save(roomWithStatusTrue);
+        }
         if (creatorTheRoom.getStatus().equals("пока не знаю зачем")) {
             Random random = new Random();
             int randomNumber = random.nextInt(1000) + 1;
@@ -52,10 +62,6 @@ public class CreateRoomCommand implements Command {
             roomRepository.save(room);
             creatorTheRoomRepository.save(creatorTheRoom);
         }
-        if (creatorTheRoom.getStatus().equals("создаю пароль")) {
-            Room room = roomRepository.findByCreatorTheRoomAndStatus(creatorTheRoom, true);
-            room.setPassword(update.getMessage().getText());
-        }
 
     }
 
@@ -63,12 +69,19 @@ public class CreateRoomCommand implements Command {
     public boolean isSupport(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
         String text = update.getMessage().getText();
-
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        if (creatorTheRoom.getStatus().equals("создаю пароль")) {
+        if (text.equals("create_room")) {
             return true;
         }
-        return text.equals("create_room");
+        try {
+            if (creatorTheRoom.getStatus().equals("создаю пароль")) {
+                return true;
+            }
+        } catch (NullPointerException e) {
+            return false;
+        }
+        return false;
+
 
     }
 }

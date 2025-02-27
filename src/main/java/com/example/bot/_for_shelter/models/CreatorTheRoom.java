@@ -14,7 +14,7 @@ public class CreatorTheRoom {
     private String name;
     private String chatId;
     private String status;
-    @OneToMany(mappedBy = "creatorTheRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "creatorTheRoom", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Room> room;
 
 
