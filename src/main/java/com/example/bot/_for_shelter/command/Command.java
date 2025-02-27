@@ -20,5 +20,5 @@ public interface Command {
      * @param command текст команды для проверки.
      * @return true, если команда поддерживается, иначе false.
      */
-    boolean isSupport(String command);
+    boolean isSupport(Update update);
 }
