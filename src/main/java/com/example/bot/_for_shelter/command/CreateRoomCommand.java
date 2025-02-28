@@ -33,18 +33,34 @@ public class CreateRoomCommand implements Command {
 
         String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
+
         if (creatorTheRoom.getStatus().equals("создаю пароль")) {
+
             List<Room> rooms = creatorTheRoom.getRoom();
             Room roomWithStatusTrue = rooms.stream()
                     .filter(Room::isStatus) // Фильтруем по статусу
                     .findFirst().get();
+
             roomWithStatusTrue.setPassword(update.getMessage().getText());
+            creatorTheRoom.setStatus("пока не знаю зачем");
             roomRepository.save(roomWithStatusTrue);
+            return;
+
         }
+
         if (creatorTheRoom.getStatus().equals("пока не знаю зачем")) {
+
             Random random = new Random();
             int randomNumber = random.nextInt(1000) + 1;
 
+            List<Room> rooms = creatorTheRoom.getRoom();
+            Room roomWithStatusTrue = rooms.stream()
+                    .filter(Room::isStatus) // Фильтруем по статусу
+                    .findFirst().orElse(null);
+            if (roomWithStatusTrue != null) {
+                roomWithStatusTrue.setStatus(false);
+                roomRepository.save(roomWithStatusTrue);
+            }
 
             Room room = new Room();
             room.setCreatorTheRoom(creatorTheRoom);
@@ -55,12 +71,14 @@ public class CreateRoomCommand implements Command {
             room.setIdForEntry(randomNumber);
             creatorTheRoom.setStatus("создаю пароль");
 
+            roomRepository.save(room);
+            creatorTheRoomRepository.save(creatorTheRoom);
+
             String text = "Комната создана ее id для входа " + randomNumber;
             SendMessage msg = sendBotMessage.createMessage(update, text);
             sendBotMessage.sendMessage(msg);
 
-            roomRepository.save(room);
-            creatorTheRoomRepository.save(creatorTheRoom);
+
         }
 
     }

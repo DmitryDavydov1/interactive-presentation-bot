@@ -16,6 +16,7 @@ public class Room {
     @ManyToOne
     private CreatorTheRoom creatorTheRoom;
     private boolean status;
+    private String questionStatus = "не жду вопросов";
     @ManyToMany
     private List<Viewer> viewers;
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)

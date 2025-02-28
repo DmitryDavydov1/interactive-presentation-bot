@@ -8,7 +8,7 @@ public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @OneToOne
+    @ManyToOne
     private Viewer viewer;
     @ManyToOne
     private Question question;
