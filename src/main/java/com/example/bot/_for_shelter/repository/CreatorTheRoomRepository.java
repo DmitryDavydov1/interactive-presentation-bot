@@ -7,4 +7,5 @@ public interface CreatorTheRoomRepository extends JpaRepository<CreatorTheRoom, 
     CreatorTheRoom findByChatId(String chatId);
 
 
+    boolean existsByChatId(String chatId);
 }

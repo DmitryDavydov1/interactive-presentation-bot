@@ -31,8 +31,9 @@ public class SendBotMessage {
     }
 
     public SendMessage createMessage(Update update, String message) {
+        String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
         SendMessage msg = new SendMessage();
-        msg.setChatId(update.getMessage().getChatId().toString());
+        msg.setChatId(chatId);
         msg.setText(message);
         return msg;
     }

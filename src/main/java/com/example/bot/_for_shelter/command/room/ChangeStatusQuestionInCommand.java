@@ -1,5 +1,7 @@
-package com.example.bot._for_shelter.command;
+package com.example.bot._for_shelter.command.room;
 
+import com.example.bot._for_shelter.command.Command;
+import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
@@ -23,6 +25,7 @@ public class ChangeStatusQuestionInCommand implements Command {
 
     @Override
     public void execute(Update update) {
+
         String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         List<Room> rooms = creatorTheRoom.getRoom();
@@ -38,8 +41,7 @@ public class ChangeStatusQuestionInCommand implements Command {
     }
 
     @Override
-    public boolean isSupport(Update update) {
-        String text = update.getMessage().getText();
-        return text.equals("change-status");
+    public boolean isSupport(String update) {
+        return update.equals("change-status");
     }
 }
