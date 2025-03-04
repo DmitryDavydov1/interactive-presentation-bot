@@ -25,19 +25,21 @@ public class CreateRoomCreatorCommand implements Command {
     public void execute(Update update) {
         String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
 
-        CreatorTheRoom creatorTheRoom = new CreatorTheRoom();
-        if (creatorTheRoomRepository.existsByChatId(chatId)) {
-            return;
-        }
-        creatorTheRoom.setStatus("пока не знаю зачем");
-        creatorTheRoom.setName(update.getCallbackQuery().getFrom().getUserName());
-        creatorTheRoom.setChatId(chatId);
-
         InlineKeyboardMarkup creatorRoomMenu = markUps.creatorRoomMenu();
         SendMessage msg = new SendMessage();
         msg.setChatId(chatId);
         msg.setReplyMarkup(creatorRoomMenu);
         msg.setText("Выберите команду");
+
+        if (creatorTheRoomRepository.existsByChatId(chatId)) {
+            sendBotMessage.sendMessage(msg);
+            return;
+        }
+        CreatorTheRoom creatorTheRoom = new CreatorTheRoom();
+        creatorTheRoom.setStatus("пока не знаю зачем");
+        creatorTheRoom.setName(update.getCallbackQuery().getFrom().getUserName());
+        creatorTheRoom.setChatId(chatId);
+
 
         sendBotMessage.sendMessage(msg);
         creatorTheRoomRepository.save(creatorTheRoom);

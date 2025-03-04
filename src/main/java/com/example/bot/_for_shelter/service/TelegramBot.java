@@ -1,7 +1,7 @@
 package com.example.bot._for_shelter.service;
 
 import com.example.bot._for_shelter.command.*;
-import com.example.bot._for_shelter.command.room.CreateQuestionCommand;
+import com.example.bot._for_shelter.command.question.CreateQuestionCommand;
 import com.example.bot._for_shelter.command.room.SetPasswordOnRoomCoomand;
 import com.example.bot._for_shelter.config.BotConfig;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
@@ -70,7 +70,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             String chatId = String.valueOf(update.getMessage().getChatId());
             CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
             if (creatorTheRoom != null) {
-                if (creatorTheRoom.getStatus().equals("создаю пароль")) {
+                if (creatorTheRoom.getStatus().equals("соз даю пароль")) {
                     setPasswordOnRoomCoomand.execute(update);
                 } else {
                     List<Room> rooms = creatorTheRoom.getRoom();

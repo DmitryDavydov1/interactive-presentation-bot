@@ -1,4 +1,4 @@
-package com.example.bot._for_shelter.command.room;
+package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
@@ -48,6 +48,7 @@ public class CreateQuestionCommand implements Command {
         msg.setReplyMarkup(markUps.questionActivitiesButton(question.getId()));
         msg.setChatId(chatId);
         msg.setText("выбери действие с вопросом");
+
         sendBotMessage.sendMessage(msg);
 
     }
