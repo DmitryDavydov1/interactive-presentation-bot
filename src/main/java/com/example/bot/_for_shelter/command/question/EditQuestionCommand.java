@@ -8,7 +8,6 @@ import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
-import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,45 +16,50 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import java.util.List;
 
 @Component
-public class CreateQuestionCommand implements Command {
+public class EditQuestionCommand implements Command {
 
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final QuestionRepository questionRepository;
+    private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
-    private final HelpService helpService;
 
-    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage, HelpService helpService) {
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
+    public EditQuestionCommand(QuestionRepository questionRepository, CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage) {
         this.questionRepository = questionRepository;
+        this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
-        this.helpService = helpService;
     }
 
     @Override
     public void execute(Update update) {
+        String textMessage = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        List<Room> rooms = creatorTheRoom.getRoom();
 
 
-        assert roomWithStatusTrue != null;
-        Question question = new Question();
-        question.setRoom(roomWithStatusTrue);
-        question.setText(update.getMessage().getText());
+        Room roomWithStatusTrue = rooms.stream()
+                .filter(Room::isStatus) // Фильтруем по статусу
+                .findFirst().orElse(null);
+
+
+        Long questionId = Long.parseLong(roomWithStatusTrue.getEditQuestionStatus());
+
+        Question question = questionRepository.findById(questionId).orElse(null);
+        question.setText(textMessage);
         questionRepository.save(question);
 
 
         String correctedQuestion = "выбери действие с вопросом: \n" +
                 "«" + question.getText() + "»";
-        long questionId = question.getId();
         InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId);
         SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUp(update, correctedQuestion, markUp);
-
-
         sendBotMessage.sendMessage(msg);
 
+
+        String nextQuestion = "Можете ввести следующий вопрос";
+        SendMessage msg2 = sendBotMessage.createMessage(update, nextQuestion);
+        sendBotMessage.sendMessage(msg2);
     }
 
     @Override

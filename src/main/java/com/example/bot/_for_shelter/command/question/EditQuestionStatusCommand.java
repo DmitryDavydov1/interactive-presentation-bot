@@ -1,49 +1,63 @@
-package com.example.bot._for_shelter.command.room;
+package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
+import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
+import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.List;
 
 @Component
-public class ChangeStatusQuestionInCommand implements Command {
+public class EditQuestionStatusCommand implements Command {
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final RoomRepository roomRepository;
     private final SendBotMessage sendBotMessage;
+    private final QuestionRepository questionRepository;
     private final HelpService helpService;
 
-    public ChangeStatusQuestionInCommand(CreatorTheRoomRepository creatorTheRoomRepository, RoomRepository roomRepository, SendBotMessage sendBotMessage, HelpService helpService) {
+    public EditQuestionStatusCommand(CreatorTheRoomRepository creatorTheRoomRepository, RoomRepository roomRepository, SendBotMessage sendBotMessage, QuestionRepository questionRepository, HelpService helpService) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.roomRepository = roomRepository;
         this.sendBotMessage = sendBotMessage;
+        this.questionRepository = questionRepository;
         this.helpService = helpService;
     }
 
     @Override
     public void execute(Update update) {
+        String updateMessage = update.getCallbackQuery().getData();
+        String[] parts = updateMessage.split("-");
+        String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
 
-        String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
 
         assert roomWithStatusTrue != null;
-        roomWithStatusTrue.setQuestionStatus("Жду вопросов");
+        roomWithStatusTrue.setEditQuestionStatus(parts[2]);
         roomRepository.save(roomWithStatusTrue);
 
-        SendMessage msg = sendBotMessage.createMessage(update, "Вводите свои вопросы");
-        sendBotMessage.sendMessage(msg);
+        long questionId = Long.parseLong(parts[2]);
+        Question question = questionRepository.findById(questionId).orElse(null);
+        SendMessage sendMessage = sendBotMessage.createMessage(update, "Можешь ввести исправленный текст для вопроса: \n " +
+                "«" + question.getText() + "»");
+
+        sendBotMessage.sendMessage(sendMessage);
     }
 
     @Override
     public boolean isSupport(String update) {
-        return update.equals("change-status");
+        try {
+            String[] parts = update.split("-");
+            return parts[0].equals("edit");
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

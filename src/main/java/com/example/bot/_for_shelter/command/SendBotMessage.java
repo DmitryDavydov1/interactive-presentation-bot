@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Service
@@ -35,6 +36,25 @@ public class SendBotMessage {
         SendMessage msg = new SendMessage();
         msg.setChatId(chatId);
         msg.setText(message);
+        return msg;
+    }
+
+    public void editMessage(SendMessage newMessage, int messageId) throws TelegramApiException {
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setChatId(newMessage.getChatId());
+        editMessageText.setText(newMessage.getText());
+        editMessageText.setReplyMarkup(null);
+        editMessageText.setMessageId(messageId);
+        telegramBot.execute(editMessageText);
+
+    }
+
+    public SendMessage createMessageWithKeyboardMarkUp(Update update, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
+        SendMessage msg = new SendMessage();
+        String chatId = String.valueOf(update.getMessage().getChatId());
+        msg.setChatId(chatId);
+        msg.setText(text);
+        msg.setReplyMarkup(inlineKeyboardMarkup);
         return msg;
     }
 }

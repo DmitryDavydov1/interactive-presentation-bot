@@ -7,6 +7,7 @@ import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
+import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -20,12 +21,14 @@ public class CreateRoomCommand implements Command {
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final SendBotMessage sendBotMessage;
     private final RoomRepository roomRepository;
+    private final HelpService helpService;
 
-    public CreateRoomCommand(CreatorTheRoomRepository creatorTheRoomRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository) {
+    public CreateRoomCommand(CreatorTheRoomRepository creatorTheRoomRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.sendBotMessage = sendBotMessage;
 
         this.roomRepository = roomRepository;
+        this.helpService = helpService;
     }
 
     @Override
@@ -40,10 +43,8 @@ public class CreateRoomCommand implements Command {
             Random random = new Random();
             int randomNumber = random.nextInt(1000) + 1;
 
-            List<Room> rooms = creatorTheRoom.getRoom();
-            Room roomWithStatusTrue = rooms.stream()
-                    .filter(Room::isStatus) // Фильтруем по статусу
-                    .findFirst().orElse(null);
+            Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+
             if (roomWithStatusTrue != null) {
                 roomWithStatusTrue.setStatus(false);
                 roomRepository.save(roomWithStatusTrue);
