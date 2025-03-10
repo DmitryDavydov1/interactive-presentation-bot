@@ -67,7 +67,8 @@ public class MarkUps {
     public InlineKeyboardMarkup questionActivitiesButton(long questionId) {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
-        List<InlineKeyboardButton> rowInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine2 = new ArrayList<>();
 
 
         var editButton = new InlineKeyboardButton();
@@ -80,12 +81,20 @@ public class MarkUps {
         deleteButton.setText(catButtonText);
         deleteButton.setCallbackData("delete-button-" + questionId);
 
-        rowInLine.add(editButton);
-        rowInLine.add(deleteButton);
 
-        rowsInLine.add(rowInLine);
+        var endQuestion = new InlineKeyboardButton();
+        String endQuestionText = EmojiParser.parseToUnicode("Завершить добавление");
+        endQuestion.setText(endQuestionText);
+        endQuestion.setCallbackData("end-question" + questionId);
+
+        rowInLine1.add(editButton);
+        rowInLine1.add(deleteButton);
+        rowInLine2.add(endQuestion);
+        rowsInLine.add(rowInLine1);
+        rowsInLine.add(rowInLine2);
 
         markupInLine.setKeyboard(rowsInLine);
         return markupInLine;
     }
+
 }

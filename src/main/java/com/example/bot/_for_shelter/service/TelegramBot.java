@@ -85,7 +85,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     if (roomWithStatusTrue != null) {
                         boolean need = roomWithStatusTrue.getQuestionStatus().equals("Жду вопросов");
                         if (need) {
-                            boolean room = !roomWithStatusTrue.getEditQuestionStatus().equals("не редактирую вопросы");
+                            boolean room = !roomWithStatusTrue.getEditQuestionStatus().equals("Не редактирую вопросы");
                             if (room) {
                                 editQuestionCommand.execute(update);
                             } else {

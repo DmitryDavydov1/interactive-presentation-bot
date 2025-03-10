@@ -8,6 +8,8 @@ import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
+import com.example.bot._for_shelter.repository.RoomRepository;
+import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -22,12 +24,16 @@ public class EditQuestionCommand implements Command {
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
+    private final RoomRepository roomRepository;
+    private final HelpService helpService;
 
-    public EditQuestionCommand(QuestionRepository questionRepository, CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage) {
+    public EditQuestionCommand(QuestionRepository questionRepository, CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService) {
         this.questionRepository = questionRepository;
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
+        this.roomRepository = roomRepository;
+        this.helpService = helpService;
     }
 
     @Override
@@ -35,19 +41,18 @@ public class EditQuestionCommand implements Command {
         String textMessage = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        List<Room> rooms = creatorTheRoom.getRoom();
 
 
-        Room roomWithStatusTrue = rooms.stream()
-                .filter(Room::isStatus) // Фильтруем по статусу
-                .findFirst().orElse(null);
+        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
 
 
         Long questionId = Long.parseLong(roomWithStatusTrue.getEditQuestionStatus());
 
         Question question = questionRepository.findById(questionId).orElse(null);
         question.setText(textMessage);
+        roomWithStatusTrue.setEditQuestionStatus("Не редактирую вопросы");
         questionRepository.save(question);
+        roomRepository.save(roomWithStatusTrue);
 
 
         String correctedQuestion = "выбери действие с вопросом: \n" +
