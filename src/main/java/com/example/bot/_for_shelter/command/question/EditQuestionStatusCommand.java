@@ -2,9 +2,11 @@ package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
+import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
@@ -21,13 +23,15 @@ public class EditQuestionStatusCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final QuestionRepository questionRepository;
     private final HelpService helpService;
+    private final ConditionRepository conditionRepository;
 
-    public EditQuestionStatusCommand(CreatorTheRoomRepository creatorTheRoomRepository, RoomRepository roomRepository, SendBotMessage sendBotMessage, QuestionRepository questionRepository, HelpService helpService) {
+    public EditQuestionStatusCommand(CreatorTheRoomRepository creatorTheRoomRepository, RoomRepository roomRepository, SendBotMessage sendBotMessage, QuestionRepository questionRepository, HelpService helpService, ConditionRepository conditionRepository) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.roomRepository = roomRepository;
         this.sendBotMessage = sendBotMessage;
         this.questionRepository = questionRepository;
         this.helpService = helpService;
+        this.conditionRepository = conditionRepository;
     }
 
     @Override
@@ -40,6 +44,18 @@ public class EditQuestionStatusCommand implements Command {
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
 
         assert roomWithStatusTrue != null;
+        Condition condition = conditionRepository.findByChatId(chatId);
+        if (condition != null) {
+            condition.setCondition(parts[2]);
+            conditionRepository.save(condition);
+        }else {
+            Condition condition1 = new Condition();
+            condition1.setCondition(parts[2]);
+            condition1.setChatId(chatId);
+
+            conditionRepository.save(condition1);
+        }
+
         roomWithStatusTrue.setEditQuestionStatus(parts[2]);
         roomRepository.save(roomWithStatusTrue);
 

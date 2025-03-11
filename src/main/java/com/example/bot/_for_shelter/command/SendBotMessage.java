@@ -32,7 +32,12 @@ public class SendBotMessage {
     }
 
     public SendMessage createMessage(Update update, String message) {
-        String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
+        String chatId;
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            chatId = String.valueOf(update.getMessage().getChatId());
+        } else {
+            chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
+        }
         SendMessage msg = new SendMessage();
         msg.setChatId(chatId);
         msg.setText(message);

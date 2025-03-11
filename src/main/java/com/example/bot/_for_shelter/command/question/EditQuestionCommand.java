@@ -3,9 +3,11 @@ package com.example.bot._for_shelter.command.question;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
+import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
+import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
@@ -26,14 +28,16 @@ public class EditQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final RoomRepository roomRepository;
     private final HelpService helpService;
+    private final ConditionRepository conditionRepository;
 
-    public EditQuestionCommand(QuestionRepository questionRepository, CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService) {
+    public EditQuestionCommand(QuestionRepository questionRepository, CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository) {
         this.questionRepository = questionRepository;
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
         this.roomRepository = roomRepository;
         this.helpService = helpService;
+        this.conditionRepository = conditionRepository;
     }
 
     @Override
@@ -50,6 +54,22 @@ public class EditQuestionCommand implements Command {
 
         Question question = questionRepository.findById(questionId).orElse(null);
         question.setText(textMessage);
+
+        Condition condition = conditionRepository.findByChatId(chatId);
+        if (condition != null) {
+            condition.setCondition("Добавляю запросы");
+            conditionRepository.save(condition);
+        }else {
+            Condition condition1 = new Condition();
+            condition1.setCondition("Добавляю запросы");
+            condition1.setChatId(chatId);
+
+            conditionRepository.save(condition1);
+        }
+
+
+
+
         roomWithStatusTrue.setEditQuestionStatus("Не редактирую вопросы");
         questionRepository.save(question);
         roomRepository.save(roomWithStatusTrue);
@@ -69,6 +89,12 @@ public class EditQuestionCommand implements Command {
 
     @Override
     public boolean isSupport(String update) {
-        return false;
+        try {
+            Double.parseDouble(update); // или Integer.parseInt(str) для целых чисел
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
     }
 }

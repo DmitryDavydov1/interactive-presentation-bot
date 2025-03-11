@@ -3,8 +3,10 @@ package com.example.bot._for_shelter.command.room;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
+import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
@@ -22,13 +24,15 @@ public class CreateRoomCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final RoomRepository roomRepository;
     private final HelpService helpService;
+    private final ConditionRepository conditionRepository;
 
-    public CreateRoomCommand(CreatorTheRoomRepository creatorTheRoomRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService) {
+    public CreateRoomCommand(CreatorTheRoomRepository creatorTheRoomRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.sendBotMessage = sendBotMessage;
 
         this.roomRepository = roomRepository;
         this.helpService = helpService;
+        this.conditionRepository = conditionRepository;
     }
 
     @Override
@@ -38,40 +42,51 @@ public class CreateRoomCommand implements Command {
         String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
 
-        if (creatorTheRoom.getStatus().equals("пока не знаю зачем")) {
 
-            Random random = new Random();
-            int randomNumber = random.nextInt(1000) + 1;
+        Random random = new Random();
+        int randomNumber = random.nextInt(1000) + 1;
 
-            Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
 
-            if (roomWithStatusTrue != null) {
-                roomWithStatusTrue.setStatus(false);
-                roomRepository.save(roomWithStatusTrue);
-            }
-
-            Room room = new Room();
-            room.setCreatorTheRoom(creatorTheRoom);
-            room.setStatus(true);
-            while (roomRepository.existsByIdForEntry(randomNumber)) {
-                randomNumber = random.nextInt(1000) + 1;
-            }
-            room.setIdForEntry(randomNumber);
-            creatorTheRoom.setStatus("создаю пароль");
-
-            roomRepository.save(room);
-            creatorTheRoomRepository.save(creatorTheRoom);
-
-            String text = "Комната создана, ее ID для входа: " + randomNumber + "\n" +
-                    "Теперь придумай пароль для комнаты.";
-
-            SendMessage msg = sendBotMessage.createMessage(update, text);
-            sendBotMessage.sendMessage(msg);
-
-
+        if (roomWithStatusTrue != null) {
+            roomWithStatusTrue.setStatus(false);
+            roomRepository.save(roomWithStatusTrue);
         }
 
+        Room room = new Room();
+        room.setCreatorTheRoom(creatorTheRoom);
+        room.setStatus(true);
+        while (roomRepository.existsByIdForEntry(randomNumber)) {
+            randomNumber = random.nextInt(1000) + 1;
+        }
+        room.setIdForEntry(randomNumber);
+        creatorTheRoom.setStatus("создаю пароль");
+
+        Condition condition = conditionRepository.findByChatId(chatId);
+        if (condition != null) {
+            condition.setCondition("создаю пароль");
+            conditionRepository.save(condition);
+        } else {
+            Condition condition1 = new Condition();
+            condition1.setCondition("создаю пароль");
+            condition1.setChatId(chatId);
+
+            conditionRepository.save(condition1);
+        }
+
+
+        roomRepository.save(room);
+        creatorTheRoomRepository.save(creatorTheRoom);
+
+        String text = "Комната создана, ее ID для входа: " + randomNumber + "\n" +
+                "Теперь придумай пароль для комнаты.";
+
+        SendMessage msg = sendBotMessage.createMessage(update, text);
+        sendBotMessage.sendMessage(msg);
+
+
     }
+
 
     @Override
     public boolean isSupport(String update) {

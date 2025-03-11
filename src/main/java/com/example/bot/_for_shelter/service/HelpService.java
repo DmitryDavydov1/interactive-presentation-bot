@@ -12,7 +12,7 @@ public class HelpService {
         List<Room> rooms = creatorTheRoom.getRoom();
         Room roomWithStatusTrue = rooms.stream()
                 .filter(Room::isStatus) // Фильтруем по статусу
-                .findFirst().get();
+                .findFirst().orElse(null);
         return roomWithStatusTrue;
     }
 }

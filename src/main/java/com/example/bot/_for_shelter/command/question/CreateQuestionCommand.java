@@ -60,6 +60,6 @@ public class CreateQuestionCommand implements Command {
 
     @Override
     public boolean isSupport(String update) {
-        return false;
+        return update.equals("Добавляю запросы");
     }
 }
