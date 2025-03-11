@@ -58,7 +58,7 @@ public class EditQuestionCommand implements Command {
         String correctedQuestion = "выбери действие с вопросом: \n" +
                 "«" + question.getText() + "»";
         InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId);
-        SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUp(update, correctedQuestion, markUp);
+        SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
         sendBotMessage.sendMessage(msg);
 
 

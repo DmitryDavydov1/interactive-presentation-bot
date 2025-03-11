@@ -49,9 +49,18 @@ public class SendBotMessage {
 
     }
 
-    public SendMessage createMessageWithKeyboardMarkUp(Update update, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
+    public SendMessage createMessageWithKeyboardMarkUpWithTextUpdate(Update update, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
         SendMessage msg = new SendMessage();
         String chatId = String.valueOf(update.getMessage().getChatId());
+        msg.setChatId(chatId);
+        msg.setText(text);
+        msg.setReplyMarkup(inlineKeyboardMarkup);
+        return msg;
+    }
+
+    public SendMessage createMessageWithKeyboardMarkUpWithCallbackUpdate(Update update, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
+        SendMessage msg = new SendMessage();
+        String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
         msg.setChatId(chatId);
         msg.setText(text);
         msg.setReplyMarkup(inlineKeyboardMarkup);

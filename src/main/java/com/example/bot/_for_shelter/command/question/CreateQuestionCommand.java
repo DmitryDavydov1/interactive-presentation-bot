@@ -51,7 +51,7 @@ public class CreateQuestionCommand implements Command {
                 "«" + question.getText() + "»";
         long questionId = question.getId();
         InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId);
-        SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUp(update, correctedQuestion, markUp);
+        SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
 
 
         sendBotMessage.sendMessage(msg);

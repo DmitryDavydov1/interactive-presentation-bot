@@ -97,4 +97,21 @@ public class MarkUps {
         return markupInLine;
     }
 
+    public InlineKeyboardMarkup menuForViewer() {
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+
+        var entranceRoom = new InlineKeyboardButton();
+        String entranceRoomText = EmojiParser.parseToUnicode("Войти в комнату");
+        entranceRoom.setText(entranceRoomText);
+        entranceRoom.setCallbackData("entrance-room");
+
+
+        rowInLine1.add(entranceRoom);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        return markupInLine;
+    }
+
 }
