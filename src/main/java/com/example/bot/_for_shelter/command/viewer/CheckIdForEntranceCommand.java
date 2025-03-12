@@ -43,7 +43,7 @@ public class CheckIdForEntranceCommand implements Command {
         if (roomWithStatusTrue == null) {
             msg.setText("Комната не найдена");
         } else {
-            condition.setCondition("вводит пароль");
+            condition.setCondition("вводит пароль " + roomWithStatusTrue);
             conditionRepository.save(condition);
         }
         sendBotMessage.sendMessage(msg);
