@@ -23,24 +23,31 @@ public class CreateRoomCreatorCommand implements Command {
 
     @Override
     public void execute(Update update) {
+        //получаем chatId пользователя, который нажал на кнопку "Я спикер"
         String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
 
+
+        //Формируем сообщения для него
         InlineKeyboardMarkup creatorRoomMenu = markUps.creatorRoomMenu();
         SendMessage msg = new SendMessage();
         msg.setChatId(chatId);
         msg.setReplyMarkup(creatorRoomMenu);
         msg.setText("Выберите команду");
 
+
+        //Проверяем есть ли у нас уже этот creator the room или нет
         if (creatorTheRoomRepository.existsByChatId(chatId)) {
             sendBotMessage.sendMessage(msg);
             return;
         }
+
+        //если нет, то создаем нового creator the room
         CreatorTheRoom creatorTheRoom = new CreatorTheRoom();
-        creatorTheRoom.setStatus("пока не знаю зачем");
+
         creatorTheRoom.setName(update.getCallbackQuery().getFrom().getUserName());
         creatorTheRoom.setChatId(chatId);
 
-
+        //отправляет сообщение и сохраняет creator the room
         sendBotMessage.sendMessage(msg);
         creatorTheRoomRepository.save(creatorTheRoom);
     }

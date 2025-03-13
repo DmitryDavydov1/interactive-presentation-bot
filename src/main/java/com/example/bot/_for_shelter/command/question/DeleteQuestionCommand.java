@@ -29,22 +29,7 @@ public class DeleteQuestionCommand implements Command {
         Question question = questionRepository.findById(id).orElse(null);
         questionRepository.deleteById(id);
 
-
-        String deleteMessage = "Вопрос удален " + "его текст: \n" + question.getText();
-        SendMessage msg = sendBotMessage.createMessage(update, deleteMessage);
-
-
-        int messageId = update.getCallbackQuery().getMessage().getMessageId();
-
-        try {
-            sendBotMessage.editMessage(msg, messageId);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-
-        SendMessage msg2 = sendBotMessage.createMessage(update, "Можете ввести следующий вопрос");
-        sendBotMessage.sendMessage(msg2);
-
+        sendMessage(update, question);
     }
 
     @Override
@@ -55,5 +40,13 @@ public class DeleteQuestionCommand implements Command {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private void sendMessage(Update update, Question question) {
+        String deleteMessage = "Вопрос удален " + "его текст: \n" + question.getText();
+        SendMessage msg = sendBotMessage.createMessage(update, deleteMessage);
+        SendMessage msg2 = sendBotMessage.createMessage(update, "Можете ввести следующий вопрос");
+        sendBotMessage.sendMessage(msg);
+        sendBotMessage.sendMessage(msg2);
     }
 }

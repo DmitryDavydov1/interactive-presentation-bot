@@ -15,6 +15,7 @@ public class EndAddQuestionCommand implements Command {
     private final HelpService helpService;
     private final RoomRepository roomRepository;
     private final SendBotMessage sendBotMessage;
+
     public EndAddQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, RoomRepository roomRepository, SendBotMessage sendBotMessage) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.helpService = helpService;
@@ -26,11 +27,8 @@ public class EndAddQuestionCommand implements Command {
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
 
-
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
-
-        roomWithStatusTrue.setQuestionStatus("Больше не принимаю вопросы");
 
         roomRepository.save(roomWithStatusTrue);
 

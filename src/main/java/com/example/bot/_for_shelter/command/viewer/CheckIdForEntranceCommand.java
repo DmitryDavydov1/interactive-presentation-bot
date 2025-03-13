@@ -34,24 +34,26 @@ public class CheckIdForEntranceCommand implements Command {
         String chatId = update.getMessage().getChatId().toString();
         int message = Integer.parseInt(update.getMessage().getText());
 
-
         Condition condition = conditionRepository.findByChatId(chatId);
-
-
         Room roomWithStatusTrue = roomRepository.findByIdForEntry(message).orElse(null);
-        SendMessage msg = sendBotMessage.createMessage(update, "Теперь введи пароль от комнаты");
-        if (roomWithStatusTrue == null) {
-            msg.setText("Комната не найдена");
-        } else {
-            condition.setCondition("вводит пароль " + roomWithStatusTrue);
-            conditionRepository.save(condition);
-        }
-        sendBotMessage.sendMessage(msg);
+
+        sendMessage(update, condition, roomWithStatusTrue);
 
     }
 
     @Override
     public boolean isSupport(String update) {
         return update.equals("Ввожу id комнаты");
+    }
+
+    public void sendMessage(Update update, Condition condition, Room room) {
+        SendMessage msg = sendBotMessage.createMessage(update, "Теперь введи пароль от комнаты");
+        if (room == null) {
+            msg.setText("Комната не найдена");
+        } else {
+            condition.setCondition("вводит пароль " + room.getId());
+            conditionRepository.save(condition);
+        }
+        sendBotMessage.sendMessage(msg);
     }
 }

@@ -38,30 +38,44 @@ public class CreateRoomCommand implements Command {
     @Override
     public void execute(Update update) {
 
-
         String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
 
-
-        Random random = new Random();
-        int randomNumber = random.nextInt(1000) + 1;
-
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
-
         if (roomWithStatusTrue != null) {
             roomWithStatusTrue.setStatus(false);
             roomRepository.save(roomWithStatusTrue);
         }
-
         Room room = new Room();
         room.setCreatorTheRoom(creatorTheRoom);
         room.setStatus(true);
+
+        int random = makeRandomNumber();
+        room.setIdForEntry(random);
+        roomRepository.save(room);
+
+        updateCondition(chatId);
+        sendRoomCreatedMessage(update, random);
+    }
+
+
+    @Override
+    public boolean isSupport(String update) {
+        return update.equals("create_room");
+    }
+
+
+    private int makeRandomNumber() {
+        Random random = new Random();
+        int randomNumber = random.nextInt(1000) + 1;
         while (roomRepository.existsByIdForEntry(randomNumber)) {
             randomNumber = random.nextInt(1000) + 1;
         }
-        room.setIdForEntry(randomNumber);
-        creatorTheRoom.setStatus("создаю пароль");
+        return randomNumber;
+    }
 
+
+    private void updateCondition(String chatId) {
         Condition condition = conditionRepository.findByChatId(chatId);
         if (condition != null) {
             condition.setCondition("создаю пароль");
@@ -70,28 +84,16 @@ public class CreateRoomCommand implements Command {
             Condition condition1 = new Condition();
             condition1.setCondition("создаю пароль");
             condition1.setChatId(chatId);
-
             conditionRepository.save(condition1);
         }
 
+    }
 
-        roomRepository.save(room);
-        creatorTheRoomRepository.save(creatorTheRoom);
 
-        String text = "Комната создана, ее ID для входа: " + randomNumber + "\n" +
-                "Теперь придумай пароль для комнаты.";
-
+    private void sendRoomCreatedMessage(Update update, int roomId) {
+        String text = "Комната создана, ее ID для входа: " + roomId + "\nТеперь придумай пароль для комнаты.";
         SendMessage msg = sendBotMessage.createMessage(update, text);
         sendBotMessage.sendMessage(msg);
-
-
     }
 
-
-    @Override
-    public boolean isSupport(String update) {
-        return update.equals("create_room");
-
-
-    }
 }

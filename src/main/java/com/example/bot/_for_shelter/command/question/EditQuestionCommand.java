@@ -23,20 +23,17 @@ import java.util.List;
 public class EditQuestionCommand implements Command {
 
     private final QuestionRepository questionRepository;
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
+
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
-    private final RoomRepository roomRepository;
-    private final HelpService helpService;
+
     private final ConditionRepository conditionRepository;
 
-    public EditQuestionCommand(QuestionRepository questionRepository, CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository) {
+    public EditQuestionCommand(QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage,
+                               ConditionRepository conditionRepository) {
         this.questionRepository = questionRepository;
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
-        this.roomRepository = roomRepository;
-        this.helpService = helpService;
         this.conditionRepository = conditionRepository;
     }
 
@@ -44,47 +41,19 @@ public class EditQuestionCommand implements Command {
     public void execute(Update update) {
         String textMessage = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-
-
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
-
-
-        Long questionId = Long.parseLong(roomWithStatusTrue.getEditQuestionStatus());
-
-        Question question = questionRepository.findById(questionId).orElse(null);
-        question.setText(textMessage);
 
         Condition condition = conditionRepository.findByChatId(chatId);
-        if (condition != null) {
-            condition.setCondition("Добавляю запросы");
-            conditionRepository.save(condition);
-        }else {
-            Condition condition1 = new Condition();
-            condition1.setCondition("Добавляю запросы");
-            condition1.setChatId(chatId);
+        Question question = questionRepository.findById(Long.valueOf(condition.getCondition())).orElse(null);
+        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(Long.valueOf(condition.getCondition()));
+        question.setText(textMessage);
+        condition.setCondition("Добавляю запросы");
 
-            conditionRepository.save(condition1);
-        }
-
-
-
-
-        roomWithStatusTrue.setEditQuestionStatus("Не редактирую вопросы");
+        conditionRepository.save(condition);
         questionRepository.save(question);
-        roomRepository.save(roomWithStatusTrue);
 
 
-        String correctedQuestion = "выбери действие с вопросом: \n" +
-                "«" + question.getText() + "»";
-        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId);
-        SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
-        sendBotMessage.sendMessage(msg);
 
-
-        String nextQuestion = "Можете ввести следующий вопрос";
-        SendMessage msg2 = sendBotMessage.createMessage(update, nextQuestion);
-        sendBotMessage.sendMessage(msg2);
+        sendMessage(update, question, markUp);
     }
 
     @Override
@@ -96,5 +65,18 @@ public class EditQuestionCommand implements Command {
             return false;
         }
 
+    }
+
+    private void sendMessage(Update update, Question question, InlineKeyboardMarkup markUp) {
+
+        String correctedQuestion = "выбери действие с вопросом: \n" +
+                "«" + question.getText() + "»";
+
+        SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
+        sendBotMessage.sendMessage(msg);
+
+        String nextQuestion = "Можете ввести следующий вопрос";
+        SendMessage msg2 = sendBotMessage.createMessage(update, nextQuestion);
+        sendBotMessage.sendMessage(msg2);
     }
 }

@@ -29,16 +29,12 @@ public class EntranceRoomCommand implements Command {
     @Override
     public void execute(Update update) {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
-        Viewer viewer = viewerRepository.findByChatId(chatId);
-        viewer.setStatus("Ввожу id комнаты");
-        viewerRepository.save(viewer);
-
-
         Condition condition = conditionRepository.findByChatId(chatId);
+
         if (condition != null) {
             condition.setCondition("Ввожу id комнаты");
             conditionRepository.save(condition);
-        }else {
+        } else {
             Condition condition1 = new Condition();
             condition1.setCondition("Ввожу id комнаты");
             condition1.setChatId(chatId);

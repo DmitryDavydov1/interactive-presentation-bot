@@ -34,38 +34,20 @@ public class EditQuestionStatusCommand implements Command {
         this.conditionRepository = conditionRepository;
     }
 
+
     @Override
     public void execute(Update update) {
         String updateMessage = update.getCallbackQuery().getData();
         String[] parts = updateMessage.split("-");
         String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
 
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
-
-        assert roomWithStatusTrue != null;
         Condition condition = conditionRepository.findByChatId(chatId);
-        if (condition != null) {
-            condition.setCondition(parts[2]);
-            conditionRepository.save(condition);
-        }else {
-            Condition condition1 = new Condition();
-            condition1.setCondition(parts[2]);
-            condition1.setChatId(chatId);
+        condition.setCondition(parts[2]);
+        conditionRepository.save(condition);
 
-            conditionRepository.save(condition1);
-        }
-
-        roomWithStatusTrue.setEditQuestionStatus(parts[2]);
-        roomRepository.save(roomWithStatusTrue);
-
-        long questionId = Long.parseLong(parts[2]);
-        Question question = questionRepository.findById(questionId).orElse(null);
-        SendMessage sendMessage = sendBotMessage.createMessage(update, "Можешь ввести исправленный текст для вопроса: \n " +
-                "«" + question.getText() + "»");
-
-        sendBotMessage.sendMessage(sendMessage);
+        sendMessage(update, Long.parseLong(parts[2]));
     }
+
 
     @Override
     public boolean isSupport(String update) {
@@ -75,5 +57,14 @@ public class EditQuestionStatusCommand implements Command {
         } catch (Exception e) {
             return false;
         }
+    }
+
+
+    private void sendMessage(Update update, long questionId) {
+        Question question = questionRepository.findById(questionId).orElse(null);
+        SendMessage sendMessage = sendBotMessage.createMessage(update, "Можешь ввести исправленный текст для вопроса: \n " +
+                "«" + question.getText() + "»");
+
+        sendBotMessage.sendMessage(sendMessage);
     }
 }

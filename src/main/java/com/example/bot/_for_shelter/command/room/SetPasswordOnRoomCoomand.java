@@ -34,46 +34,50 @@ public class SetPasswordOnRoomCoomand implements Command {
 
     @Override
     public void execute(Update update) {
+
         String chatId = String.valueOf(update.getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
 
-        if (creatorTheRoom.getStatus().equals("создаю пароль")) {
+        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        roomWithStatusTrue.setPassword(update.getMessage().getText());
 
-            Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        roomRepository.save(roomWithStatusTrue);
+        creatorTheRoomRepository.save(creatorTheRoom);
 
-            roomWithStatusTrue.setPassword(update.getMessage().getText());
-            creatorTheRoom.setStatus("пока не знаю зачем");
-            roomWithStatusTrue.setQuestionStatus("Жду вопросов");
+        updateCondition(chatId);
 
+        sendPasswordCreatedMessage(chatId);
 
-            roomRepository.save(roomWithStatusTrue);
-            creatorTheRoomRepository.save(creatorTheRoom);
-
-
-            Condition condition = conditionRepository.findByChatId(chatId);
-            if (condition != null) {
-                condition.setCondition("Добавляю запросы");
-                conditionRepository.save(condition);
-            }else {
-                Condition condition1 = new Condition();
-                condition1.setCondition("Добавляю запросы");
-                condition1.setChatId(chatId);
-
-                conditionRepository.save(condition1);
-            }
-
-
-            SendMessage msg = new SendMessage();
-            msg.setChatId(chatId);
-            msg.setText("Пароль создан, теперь можете ввести первые вопросы ");
-
-            sendBotMessage.sendMessage(msg);
-
-        }
     }
+
 
     @Override
     public boolean isSupport(String update) {
         return update.equals("создаю пароль");
     }
+
+
+    private void sendPasswordCreatedMessage(String chatId) {
+        SendMessage msg = new SendMessage();
+        msg.setChatId(chatId);
+        msg.setText("Пароль создан, теперь можете ввести первые вопросы ");
+        sendBotMessage.sendMessage(msg);
+    }
+
+
+    private void updateCondition(String chatId) {
+        Condition condition = conditionRepository.findByChatId(chatId);
+        if (condition != null) {
+            condition.setCondition("Добавляю запросы");
+            conditionRepository.save(condition);
+        } else {
+            Condition condition1 = new Condition();
+            condition1.setCondition("Добавляю запросы");
+            condition1.setChatId(chatId);
+
+            conditionRepository.save(condition1);
+        }
+
+    }
 }
+

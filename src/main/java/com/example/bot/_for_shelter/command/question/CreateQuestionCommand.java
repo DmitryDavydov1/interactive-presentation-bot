@@ -46,7 +46,15 @@ public class CreateQuestionCommand implements Command {
         question.setText(update.getMessage().getText());
         questionRepository.save(question);
 
+        sendMessage(update, question);
+    }
 
+    @Override
+    public boolean isSupport(String update) {
+        return update.equals("Добавляю запросы");
+    }
+
+    private void sendMessage(Update update, Question question) {
         String correctedQuestion = "выбери действие с вопросом: \n" +
                 "«" + question.getText() + "»";
         long questionId = question.getId();
@@ -55,11 +63,5 @@ public class CreateQuestionCommand implements Command {
 
 
         sendBotMessage.sendMessage(msg);
-
-    }
-
-    @Override
-    public boolean isSupport(String update) {
-        return update.equals("Добавляю запросы");
     }
 }

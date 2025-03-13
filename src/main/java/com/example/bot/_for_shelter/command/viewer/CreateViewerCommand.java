@@ -39,8 +39,6 @@ public class CreateViewerCommand implements Command {
         Viewer viewer = new Viewer();
         viewer.setChatId(chatId);
         viewer.setName(userName);
-        viewer.setStatus("Только создался");
-        viewer.setStatusAnswer("Еще не отвечаю");
         viewerRepository.save(viewer);
 
 
