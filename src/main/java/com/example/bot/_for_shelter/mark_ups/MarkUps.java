@@ -114,4 +114,21 @@ public class MarkUps {
         return markupInLine;
     }
 
+
+    public InlineKeyboardMarkup menuForViewerWithRoom() {
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+
+        var answerQuestions = new InlineKeyboardButton();
+        String entranceRoomText = EmojiParser.parseToUnicode("Отвечать на вопросы :question: ");
+        answerQuestions.setText(entranceRoomText);
+        answerQuestions.setCallbackData("отвечать на вопросы");
+
+        rowInLine1.add(answerQuestions);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        return markupInLine;
+    }
+
 }

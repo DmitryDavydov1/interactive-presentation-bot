@@ -10,6 +10,7 @@ import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -36,6 +37,7 @@ public class CreateRoomCommand implements Command {
     }
 
     @Override
+    @Transactional
     public void execute(Update update) {
 
         String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());

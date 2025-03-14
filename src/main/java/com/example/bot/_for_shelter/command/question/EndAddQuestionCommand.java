@@ -7,6 +7,7 @@ import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
+import jakarta.transaction.Transactional;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 public class EndAddQuestionCommand implements Command {
@@ -14,16 +15,16 @@ public class EndAddQuestionCommand implements Command {
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final HelpService helpService;
     private final RoomRepository roomRepository;
-    private final SendBotMessage sendBotMessage;
 
-    public EndAddQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, RoomRepository roomRepository, SendBotMessage sendBotMessage) {
+
+    public EndAddQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, RoomRepository roomRepository) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.helpService = helpService;
         this.roomRepository = roomRepository;
-        this.sendBotMessage = sendBotMessage;
     }
 
     @Override
+    @Transactional
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
 
