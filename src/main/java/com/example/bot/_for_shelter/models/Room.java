@@ -21,6 +21,7 @@ public class Room {
     @JsonBackReference
     private CreatorTheRoom creatorTheRoom;
     private boolean status;
+    private boolean answerStatus;
     @ManyToMany
     private List<Viewer> viewers;
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)

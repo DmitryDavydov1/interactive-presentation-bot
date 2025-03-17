@@ -3,7 +3,6 @@ package com.example.bot._for_shelter.mark_ups;
 import com.vdurmont.emoji.EmojiParser;
 
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -114,4 +113,66 @@ public class MarkUps {
         return markupInLine;
     }
 
+
+    public InlineKeyboardMarkup menuForViewerWithRoom() {
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+
+        var answerQuestions = new InlineKeyboardButton();
+        String entranceRoomText = EmojiParser.parseToUnicode("Отвечать на вопросы :question: ");
+        answerQuestions.setText(entranceRoomText);
+        answerQuestions.setCallbackData("отвечать на вопросы");
+
+        rowInLine1.add(answerQuestions);
+        rowsInLine.add(rowInLine1);
+        markupInLine.setKeyboard(rowsInLine);
+        return markupInLine;
+    }
+
+
+    public InlineKeyboardMarkup menuAfterAddQuestion(int roomId) {
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine2 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine3 = new ArrayList<>();
+        List<InlineKeyboardButton> rowInLine4 = new ArrayList<>();
+
+
+        var addQuestionAfterAddQuestion = new InlineKeyboardButton();
+        String addQuestionText = EmojiParser.parseToUnicode("Добавить вопросы");
+        addQuestionAfterAddQuestion.setText(addQuestionText);
+        addQuestionAfterAddQuestion.setCallbackData("отвечать на вопросы");
+
+
+        var forbidResponding = new InlineKeyboardButton();
+        String forbidRespondingText = EmojiParser.parseToUnicode("Запретить отвечать");
+        forbidResponding.setText(forbidRespondingText);
+        forbidResponding.setCallbackData("Запрещаю отвечать " + roomId);
+
+        var sendStatistics = new InlineKeyboardButton();
+        String sendStatisticsText = EmojiParser.parseToUnicode("Отправить статистику");
+        sendStatistics.setText(sendStatisticsText);
+        sendStatistics.setCallbackData("Отправить статистику");
+
+        var viewStatistics = new InlineKeyboardButton();
+        String viewStatisticsText = EmojiParser.parseToUnicode("Посмотреть статистику");
+        viewStatistics.setText(viewStatisticsText);
+        viewStatistics.setCallbackData("Посмотреть статистику");
+
+
+        rowInLine1.add(addQuestionAfterAddQuestion);
+        rowInLine2.add(forbidResponding);
+        rowInLine3.add(sendStatistics);
+        rowInLine4.add(viewStatistics);
+
+        rowsInLine.add(rowInLine1);
+        rowsInLine.add(rowInLine2);
+        rowsInLine.add(rowInLine3);
+        rowsInLine.add(rowInLine4);
+        markupInLine.setKeyboard(rowsInLine);
+
+        return markupInLine;
+    }
 }

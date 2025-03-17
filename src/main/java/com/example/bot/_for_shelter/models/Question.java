@@ -3,6 +3,8 @@ package com.example.bot._for_shelter.models;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Entity
 @Data
 public class Question {
@@ -12,6 +14,8 @@ public class Question {
     private String text;
     @ManyToOne
     private Room room;
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Answer> answers;
 
 
 }

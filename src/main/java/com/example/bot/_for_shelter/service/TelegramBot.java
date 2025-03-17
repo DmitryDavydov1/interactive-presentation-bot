@@ -25,21 +25,13 @@ public class TelegramBot extends TelegramLongPollingBot {
      */
 
     private final List<Command> commandList;
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
-    //    private final SetPasswordOnRoomCoomand setPasswordOnRoomCoomand;
-//    private final CreateQuestionCommand createQuestionCommand;
-//    private final EditQuestionCommand editQuestionCommand;
-//    private final HelpService helpService;
     private final ConditionRepository conditionRepository;
 
-    public TelegramBot(BotConfig config, List<Command> commandList, CreatorTheRoomRepository creatorTheRoomRepository, SetPasswordOnRoomCoomand setPasswordOnRoomCoomand, CreateQuestionCommand createQuestionCommand, EditQuestionCommand editQuestionCommand, HelpService helpService, ConditionRepository conditionRepository, StartCommand startCommand) {
+    public TelegramBot(BotConfig config, List<Command> commandList,
+                       ConditionRepository conditionRepository,
+                       StartCommand startCommand) {
         this.config = config;
         this.commandList = commandList;
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
-//        this.setPasswordOnRoomCoomand = setPasswordOnRoomCoomand;
-//        this.createQuestionCommand = createQuestionCommand;
-//        this.editQuestionCommand = editQuestionCommand;
-//        this.helpService = helpService;
         this.conditionRepository = conditionRepository;
         this.startCommand = startCommand;
     }

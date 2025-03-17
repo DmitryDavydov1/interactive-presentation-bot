@@ -10,9 +10,9 @@ import java.util.List;
 public class HelpService {
     public Room findLastRoom(CreatorTheRoom creatorTheRoom) {
         List<Room> rooms = creatorTheRoom.getRoom();
-        Room roomWithStatusTrue = rooms.stream()
+
+        return rooms.stream()
                 .filter(Room::isStatus) // Фильтруем по статусу
                 .findFirst().orElse(null);
-        return roomWithStatusTrue;
     }
 }
