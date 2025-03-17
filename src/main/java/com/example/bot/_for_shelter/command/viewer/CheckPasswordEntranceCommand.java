@@ -26,14 +26,14 @@ public class CheckPasswordEntranceCommand implements Command {
     private final ConditionRepository conditionRepository;
     private final SendBotMessage sendBotMessage;
     private final ViewerRepository viewerRepository;
-    private final MarkUps markUps;
 
-    public CheckPasswordEntranceCommand(RoomRepository roomRepository, ConditionRepository conditionRepository, SendBotMessage sendBotMessage, ViewerRepository viewerRepository, MarkUps markUps) {
+
+    public CheckPasswordEntranceCommand(RoomRepository roomRepository, ConditionRepository conditionRepository,
+                                        SendBotMessage sendBotMessage, ViewerRepository viewerRepository) {
         this.roomRepository = roomRepository;
         this.conditionRepository = conditionRepository;
         this.sendBotMessage = sendBotMessage;
         this.viewerRepository = viewerRepository;
-        this.markUps = markUps;
     }
 
     @Override

@@ -34,14 +34,22 @@ public class AnswerTheQuestionCommand implements Command {
     @Override
     @Transactional
     public void execute(Update update) {
+
         String text = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
 
         Condition condition = conditionRepository.findByChatId(chatId);
         String[] conditionSplit = condition.getCondition().split(" ");
         int roomId = (int) Long.parseLong(conditionSplit[3]);
+        Room room = roomRepository.findById(roomId).orElse(null);
+        assert room != null;
+        if (!room.isAnswerStatus()) {
+            SendMessage message = sendBotMessage.createMessage(update, "Ответы больше нельзя вводить");
+            sendBotMessage.sendMessage(message);
+            return;
+        }
 
-        List<Question> questions = roomRepository.findById(roomId).orElse(null).getQuestions();
+        List<Question> questions = room.getQuestions();
         int questionId = (int) Long.parseLong(conditionSplit[4]);
 
         Viewer viewer = viewerRepository.findByChatId(chatId);

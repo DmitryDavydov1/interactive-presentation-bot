@@ -14,12 +14,11 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class EntranceRoomCommand implements Command {
-    private final ViewerRepository viewerRepository;
     private final SendBotMessage sendBotMessage;
     private final ConditionRepository conditionRepository;
 
-    public EntranceRoomCommand(ViewerRepository viewerRepository, SendBotMessage sendBotMessage, ConditionRepository conditionRepository) {
-        this.viewerRepository = viewerRepository;
+    public EntranceRoomCommand(SendBotMessage sendBotMessage, ConditionRepository conditionRepository) {
+
         this.sendBotMessage = sendBotMessage;
 
         this.conditionRepository = conditionRepository;

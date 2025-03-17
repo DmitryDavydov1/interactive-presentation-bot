@@ -51,7 +51,7 @@ public class CreateRoomCommand implements Command {
         Room room = new Room();
         room.setCreatorTheRoom(creatorTheRoom);
         room.setStatus(true);
-
+        room.setAnswerStatus(true);
         int random = makeRandomNumber();
         room.setIdForEntry(random);
         roomRepository.save(room);
