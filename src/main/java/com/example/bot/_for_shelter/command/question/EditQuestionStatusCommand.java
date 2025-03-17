@@ -18,19 +18,14 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class EditQuestionStatusCommand implements Command {
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
-    private final RoomRepository roomRepository;
+
     private final SendBotMessage sendBotMessage;
     private final QuestionRepository questionRepository;
-    private final HelpService helpService;
     private final ConditionRepository conditionRepository;
 
-    public EditQuestionStatusCommand(CreatorTheRoomRepository creatorTheRoomRepository, RoomRepository roomRepository, SendBotMessage sendBotMessage, QuestionRepository questionRepository, HelpService helpService, ConditionRepository conditionRepository) {
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
-        this.roomRepository = roomRepository;
+    public EditQuestionStatusCommand(SendBotMessage sendBotMessage, QuestionRepository questionRepository, ConditionRepository conditionRepository) {
         this.sendBotMessage = sendBotMessage;
         this.questionRepository = questionRepository;
-        this.helpService = helpService;
         this.conditionRepository = conditionRepository;
     }
 

@@ -56,7 +56,12 @@ public class SendBotMessage {
 
     public SendMessage createMessageWithKeyboardMarkUpWithTextUpdate(Update update, String text, InlineKeyboardMarkup inlineKeyboardMarkup) {
         SendMessage msg = new SendMessage();
-        String chatId = String.valueOf(update.getMessage().getChatId());
+        String chatId;
+        if (update.hasCallbackQuery()) {
+            chatId = update.getCallbackQuery().getMessage().getChatId().toString();
+        } else {
+            chatId = String.valueOf(update.getMessage().getChatId());
+        }
         msg.setChatId(chatId);
         msg.setText(text);
         msg.setReplyMarkup(inlineKeyboardMarkup);

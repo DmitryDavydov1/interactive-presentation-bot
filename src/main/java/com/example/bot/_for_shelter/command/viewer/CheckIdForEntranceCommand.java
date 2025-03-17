@@ -16,14 +16,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class CheckIdForEntranceCommand implements Command {
     private final ConditionRepository conditionRepository;
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final SendBotMessage sendBotMessage;
     private final RoomRepository roomRepository;
 
-    public CheckIdForEntranceCommand(RoomRepository roomRepository, ConditionRepository conditionRepository, CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, SendBotMessage sendBotMessage, RoomRepository roomRepository1) {
+    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository1) {
         this.conditionRepository = conditionRepository;
 
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.sendBotMessage = sendBotMessage;
         this.roomRepository = roomRepository1;
     }
