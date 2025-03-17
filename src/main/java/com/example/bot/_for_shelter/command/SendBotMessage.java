@@ -76,4 +76,11 @@ public class SendBotMessage {
         msg.setReplyMarkup(inlineKeyboardMarkup);
         return msg;
     }
+
+    public SendMessage sendMessageForAll(String chatId, String message){
+        SendMessage msg = new SendMessage();
+        msg.setText(message);
+        msg.setChatId(chatId);
+        return msg;
+    }
 }
