@@ -17,7 +17,7 @@ public class CreatorTheRoom {
     private long id;
     private String name;
     private String chatId;
-    @OneToMany(mappedBy = "creatorTheRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "creatorTheRoom", cascade = CascadeType.PERSIST, orphanRemoval = true)
     @JsonManagedReference
     private List<Room> room;
 

@@ -28,7 +28,7 @@ public class EntranceRoomCommand implements Command {
     @Override
     public void execute(Update update) {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
 
         if (condition != null) {
             condition.setCondition("Ввожу id комнаты");

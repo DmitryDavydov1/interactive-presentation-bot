@@ -32,7 +32,7 @@ public class CheckIdForEntranceCommand implements Command {
         String chatId = update.getMessage().getChatId().toString();
         int message = Integer.parseInt(update.getMessage().getText());
 
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         Room roomWithStatusTrue = roomRepository.findByIdForEntry(message).orElse(null);
 
         sendMessage(update, condition, roomWithStatusTrue);

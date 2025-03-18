@@ -51,7 +51,9 @@ public class CreateRoomCommand implements Command {
         Room room = new Room();
         room.setCreatorTheRoom(creatorTheRoom);
         room.setStatus(true);
+        room.setQuestionStatus(true);
         room.setAnswerStatus(true);
+
         int random = makeRandomNumber();
         room.setIdForEntry(random);
         roomRepository.save(room);
@@ -78,7 +80,7 @@ public class CreateRoomCommand implements Command {
 
 
     private void updateCondition(String chatId) {
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         if (condition != null) {
             condition.setCondition("создаю пароль");
             conditionRepository.save(condition);

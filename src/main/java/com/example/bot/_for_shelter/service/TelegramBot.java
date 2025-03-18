@@ -71,7 +71,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             String chatId = String.valueOf(update.getMessage().getChatId());
 
 
-            Condition condition = conditionRepository.findByChatId(chatId);
+            Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
             commandList.stream()
                     .filter(command -> command.isSupport(condition.getCondition()))
                     .forEach(command -> {

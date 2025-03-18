@@ -42,7 +42,7 @@ public class EditQuestionCommand implements Command {
         String textMessage = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
 
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         Question question = questionRepository.findById(Long.valueOf(condition.getCondition())).orElse(null);
         InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(Long.valueOf(condition.getCondition()));
         question.setText(textMessage);
@@ -59,7 +59,7 @@ public class EditQuestionCommand implements Command {
     @Override
     public boolean isSupport(String update) {
         try {
-            Double.parseDouble(update); // или Integer.parseInt(str) для целых чисел
+            Double.parseDouble(update);
             return true;
         } catch (NumberFormatException e) {
             return false;

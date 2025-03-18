@@ -42,13 +42,17 @@ public class EndAddQuestionCommand implements Command {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
 
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        Condition condition = conditionRepository.findByChatId(chatId);
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
-        condition.setCondition("Завершил добавление вопросов");
 
 
         roomRepository.save(roomWithStatusTrue);
+        roomWithStatusTrue.setQuestionStatus(false);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
+        assert condition != null;
+        condition.setCondition("Завершил добавление вопросов");
         conditionRepository.save(condition);
+
+
         int roomId = roomWithStatusTrue.getId();
         InlineKeyboardMarkup markUp = markUps.menuAfterAddQuestion(roomId);
         String answer = "Вы завершили добавление вопросов \nТеперь выберите пункт:";

@@ -21,13 +21,12 @@ public class SendStatisticCommand implements Command {
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final HelpService helpService;
     private final SendBotMessage sendBotMessage;
-    private final ViewerRepository viewerRepository;
 
-    public SendStatisticCommand(CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, SendBotMessage sendBotMessage, ViewerRepository viewerRepository) {
+
+    public SendStatisticCommand(CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, SendBotMessage sendBotMessage) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.helpService = helpService;
         this.sendBotMessage = sendBotMessage;
-        this.viewerRepository = viewerRepository;
     }
 
     @Override
@@ -41,8 +40,11 @@ public class SendStatisticCommand implements Command {
         StringBuilder answer = new StringBuilder();
         for (Question question : questions) {
             answer.append(question.getStatistic());
-
-            SendMessage msg = sendBotMessage.sendMessageForAll(chatId, answer.toString());
+            String textMsg = answer.toString();
+            if (textMsg.isEmpty()) {
+                return;
+            }
+            SendMessage msg = sendBotMessage.sendMessageForAll(chatId, textMsg);
             sendBotMessage.sendMessage(msg);
 
             answer.setLength(0);
