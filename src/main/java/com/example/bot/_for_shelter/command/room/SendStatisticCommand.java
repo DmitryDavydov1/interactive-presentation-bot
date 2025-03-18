@@ -47,6 +47,8 @@ public class SendStatisticCommand implements Command {
                 SendMessage msg = sendBotMessage.sendMessageForAll(viewer.getChatId(), textMsg);
                 sendBotMessage.sendMessage(msg);
             }
+            SendMessage msg = sendBotMessage.createMessage(update, textMsg);
+            sendBotMessage.sendMessage(msg);
 
             answer.setLength(0);
         }
