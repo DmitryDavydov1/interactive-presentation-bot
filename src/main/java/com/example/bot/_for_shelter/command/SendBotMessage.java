@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -77,10 +78,26 @@ public class SendBotMessage {
         return msg;
     }
 
-    public SendMessage sendMessageForAll(String chatId, String message){
+    public SendMessage sendMessageForAll(String chatId, String message) {
         SendMessage msg = new SendMessage();
         msg.setText(message);
         msg.setChatId(chatId);
         return msg;
     }
+
+    public void deleteMessage(Update update) {
+        String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
+        int messageId = update.getCallbackQuery().getMessage().getMessageId();
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(String.valueOf(chatId));
+        deleteMessage.setMessageId(messageId);
+
+        try {
+            telegramBot.execute(deleteMessage); // Отправка запроса на удаление сообщения
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

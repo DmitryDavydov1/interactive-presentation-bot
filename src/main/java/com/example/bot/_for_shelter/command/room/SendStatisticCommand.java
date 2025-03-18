@@ -7,7 +7,6 @@ import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.models.Viewer;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
-import com.example.bot._for_shelter.repository.ViewerRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class SendStatisticCommand implements Command {
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
         List<Question> questions = roomWithStatusTrue.getQuestions();
-
+        List<Viewer> viewers = roomWithStatusTrue.getViewers();
         StringBuilder answer = new StringBuilder();
         for (Question question : questions) {
             answer.append(question.getStatistic());
@@ -44,8 +43,10 @@ public class SendStatisticCommand implements Command {
             if (textMsg.isEmpty()) {
                 return;
             }
-            SendMessage msg = sendBotMessage.sendMessageForAll(chatId, textMsg);
-            sendBotMessage.sendMessage(msg);
+            for (Viewer viewer : viewers) {
+                SendMessage msg = sendBotMessage.sendMessageForAll(viewer.getChatId(), textMsg);
+                sendBotMessage.sendMessage(msg);
+            }
 
             answer.setLength(0);
         }

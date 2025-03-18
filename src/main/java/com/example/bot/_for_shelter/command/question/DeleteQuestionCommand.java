@@ -41,13 +41,13 @@ public class DeleteQuestionCommand implements Command {
             sendBotMessage.sendMessage(msg);
             return;
         }
-
+        sendBotMessage.deleteMessage(update);
         String button = update.getCallbackQuery().getData();
+
         long id = Long.parseLong(button.split("-")[2]);
-        Question question = questionRepository.findById(id).orElse(null);
         questionRepository.deleteById(id);
 
-        sendMessage(update, question);
+
     }
 
     @Override
@@ -60,11 +60,11 @@ public class DeleteQuestionCommand implements Command {
         }
     }
 
-    private void sendMessage(Update update, Question question) {
-        String deleteMessage = "Вопрос удален " + "его текст: \n" + question.getText();
-        SendMessage msg = sendBotMessage.createMessage(update, deleteMessage);
-        SendMessage msg2 = sendBotMessage.createMessage(update, "Можете ввести следующий вопрос");
-        sendBotMessage.sendMessage(msg);
-        sendBotMessage.sendMessage(msg2);
-    }
+//    private void sendMessage(Update update, Question question) {
+//        String deleteMessage = "Вопрос удален " + "его текст: \n" + question.getText();
+//        SendMessage msg = sendBotMessage.createMessage(update, deleteMessage);
+//        SendMessage msg2 = sendBotMessage.createMessage(update, "Можете ввести следующий вопрос");
+//        sendBotMessage.sendMessage(msg);
+//        sendBotMessage.sendMessage(msg2);
+//    }
 }
