@@ -2,9 +2,11 @@ package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
+import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.service.HelpService;
@@ -22,12 +24,14 @@ public class DeleteQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final HelpService helpService;
+    private final ConditionRepository conditionRepository;
 
-    public DeleteQuestionCommand(QuestionRepository questionRepository, SendBotMessage sendBotMessage, CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService) {
+    public DeleteQuestionCommand(QuestionRepository questionRepository, SendBotMessage sendBotMessage, CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, ConditionRepository conditionRepository) {
         this.questionRepository = questionRepository;
         this.sendBotMessage = sendBotMessage;
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.helpService = helpService;
+        this.conditionRepository = conditionRepository;
     }
 
     @Override
@@ -41,6 +45,11 @@ public class DeleteQuestionCommand implements Command {
             sendBotMessage.sendMessage(msg);
             return;
         }
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
+
+        Integer parts = Integer.valueOf(condition.getCondition().split(" ")[2]);
+
+        sendBotMessage.deleteMessageWithMessageId(update, parts);
         sendBotMessage.deleteMessage(update);
         String button = update.getCallbackQuery().getData();
 

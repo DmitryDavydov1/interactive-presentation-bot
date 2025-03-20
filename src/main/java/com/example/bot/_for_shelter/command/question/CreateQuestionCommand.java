@@ -3,9 +3,11 @@ package com.example.bot._for_shelter.command.question;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
+import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
+import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.service.HelpService;
@@ -25,13 +27,15 @@ public class CreateQuestionCommand implements Command {
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
+    private final ConditionRepository conditionRepository;
 
-    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage, HelpService helpService) {
+    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage, HelpService helpService, ConditionRepository conditionRepository) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.questionRepository = questionRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
         this.helpService = helpService;
+        this.conditionRepository = conditionRepository;
     }
 
     @Override
@@ -41,19 +45,22 @@ public class CreateQuestionCommand implements Command {
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
 
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
 
+        Integer messageId = update.getMessage().getMessageId();
+        condition.setCondition("Добавляю запросы " + messageId);
         assert roomWithStatusTrue != null;
         Question question = new Question();
         question.setRoom(roomWithStatusTrue);
         question.setText(update.getMessage().getText());
         questionRepository.save(question);
-
+        conditionRepository.save(condition);
         sendMessage(update, question);
     }
 
     @Override
     public boolean isSupport(String update) {
-        return update.equals("Добавляю запросы");
+        return update.startsWith("Добавляю запросы");
     }
 
     private void sendMessage(Update update, Question question) {

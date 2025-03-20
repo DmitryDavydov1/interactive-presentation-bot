@@ -100,4 +100,18 @@ public class SendBotMessage {
         }
     }
 
+    public void deleteMessageWithMessageId(Update update, Integer messageId) {
+        String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
+
+        DeleteMessage deleteMessage = new DeleteMessage();
+        deleteMessage.setChatId(String.valueOf(chatId));
+        deleteMessage.setMessageId(messageId);
+
+        try {
+            telegramBot.execute(deleteMessage); // Отправка запроса на удаление сообщения
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
