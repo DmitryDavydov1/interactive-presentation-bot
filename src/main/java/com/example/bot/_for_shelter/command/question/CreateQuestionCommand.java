@@ -45,16 +45,13 @@ public class CreateQuestionCommand implements Command {
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
 
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
 
-        Integer messageId = update.getMessage().getMessageId();
-        condition.setCondition("Добавляю запросы " + messageId);
         assert roomWithStatusTrue != null;
         Question question = new Question();
         question.setRoom(roomWithStatusTrue);
         question.setText(update.getMessage().getText());
+
         questionRepository.save(question);
-        conditionRepository.save(condition);
         sendMessage(update, question);
     }
 
@@ -67,7 +64,7 @@ public class CreateQuestionCommand implements Command {
         String correctedQuestion = "выбери действие с вопросом: \n" +
                 "«" + question.getText() + "»";
         long questionId = question.getId();
-        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId);
+        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId, update);
         SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
 
 

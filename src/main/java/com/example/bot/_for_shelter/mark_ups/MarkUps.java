@@ -3,6 +3,7 @@ package com.example.bot._for_shelter.mark_ups;
 import com.vdurmont.emoji.EmojiParser;
 
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -63,7 +64,10 @@ public class MarkUps {
         return markupInLine;
     }
 
-    public InlineKeyboardMarkup questionActivitiesButton(long questionId) {
+    public InlineKeyboardMarkup questionActivitiesButton(long questionId, Update update) {
+
+        Integer messageId = update.getMessage().getMessageId();
+
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
@@ -73,12 +77,12 @@ public class MarkUps {
         var editButton = new InlineKeyboardButton();
         String dogButtonText = EmojiParser.parseToUnicode("Изменить" + " ✍\uD83C\uDFFB");
         editButton.setText(dogButtonText);
-        editButton.setCallbackData("edit-button-" + questionId);
+        editButton.setCallbackData("edit-button-" + questionId + "-" + messageId);
 
         var deleteButton = new InlineKeyboardButton();
         String catButtonText = EmojiParser.parseToUnicode("Удалить вопрос " + " ❌");
         deleteButton.setText(catButtonText);
-        deleteButton.setCallbackData("delete-button-" + questionId);
+        deleteButton.setCallbackData("delete-button-" + questionId + "-" + messageId);
 
 
         var endQuestion = new InlineKeyboardButton();

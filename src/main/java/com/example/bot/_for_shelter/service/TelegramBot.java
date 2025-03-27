@@ -1,20 +1,20 @@
 package com.example.bot._for_shelter.service;
 
 import com.example.bot._for_shelter.command.*;
-import com.example.bot._for_shelter.command.question.CreateQuestionCommand;
-import com.example.bot._for_shelter.command.question.EditQuestionCommand;
-import com.example.bot._for_shelter.command.room.SetPasswordOnRoomCoomand;
+
+
 import com.example.bot._for_shelter.config.BotConfig;
-import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
 
 import com.example.bot._for_shelter.models.Condition;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
@@ -78,6 +78,14 @@ public class TelegramBot extends TelegramLongPollingBot {
                         command.execute(update);
                     });
         }
+    }
+
+    public int sendMessage(SendMessage sendMessage) throws TelegramApiException {
+        Message sentMessage = execute(sendMessage);
+        Integer messageId = sentMessage.getMessageId();
+
+        System.out.println("Отправлено сообщение с message_id: " + messageId);
+        return messageId;
     }
 }
 

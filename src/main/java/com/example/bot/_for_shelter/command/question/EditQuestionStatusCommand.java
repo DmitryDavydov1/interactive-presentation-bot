@@ -9,12 +9,15 @@ import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
-import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
+import com.example.bot._for_shelter.service.TelegramBot;
 import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 
 @Component
@@ -25,13 +28,17 @@ public class EditQuestionStatusCommand implements Command {
     private final ConditionRepository conditionRepository;
     private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final HelpService helpService;
+    private final TelegramBot telegramBot;
 
-    public EditQuestionStatusCommand(SendBotMessage sendBotMessage, QuestionRepository questionRepository, ConditionRepository conditionRepository, CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService) {
+    @Autowired
+    @Lazy
+    public EditQuestionStatusCommand(SendBotMessage sendBotMessage, QuestionRepository questionRepository, ConditionRepository conditionRepository, CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, TelegramBot telegramBot) {
         this.sendBotMessage = sendBotMessage;
         this.questionRepository = questionRepository;
         this.conditionRepository = conditionRepository;
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.helpService = helpService;
+        this.telegramBot = telegramBot;
     }
 
 
@@ -40,6 +47,7 @@ public class EditQuestionStatusCommand implements Command {
     public void execute(Update update) {
         String updateMessage = update.getCallbackQuery().getData();
         String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
+        Integer updateMessageId = update.getCallbackQuery().getMessage().getMessageId();
 
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
         Room room = helpService.findLastRoom(creatorTheRoom);
@@ -51,10 +59,17 @@ public class EditQuestionStatusCommand implements Command {
 
         String[] parts = updateMessage.split("-");
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        condition.setCondition(parts[2]);
-        conditionRepository.save(condition);
+        int messageId;
 
-        sendMessage(update, Long.parseLong(parts[2]));
+        try {
+            messageId = sendMessage(update, Long.parseLong(parts[2]));
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+
+        String newCondition = "Изменяю-вопрос-" + parts[2] + "-" + updateMessageId + "-" + parts[3] + "-" + messageId;
+        condition.setCondition(newCondition);
+        conditionRepository.save(condition);
     }
 
 
@@ -69,11 +84,12 @@ public class EditQuestionStatusCommand implements Command {
     }
 
 
-    private void sendMessage(Update update, long questionId) {
+    private int sendMessage(Update update, long questionId) throws TelegramApiException {
         Question question = questionRepository.findById(questionId).orElse(null);
         SendMessage sendMessage = sendBotMessage.createMessage(update, "Можешь ввести исправленный текст для вопроса: \n " +
                 "«" + question.getText() + "»");
 
-        sendBotMessage.sendMessage(sendMessage);
+
+        return telegramBot.sendMessage(sendMessage);
     }
 }

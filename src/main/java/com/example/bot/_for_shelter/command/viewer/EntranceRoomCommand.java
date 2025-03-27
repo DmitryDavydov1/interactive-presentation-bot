@@ -2,11 +2,9 @@ package com.example.bot._for_shelter.command.viewer;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
-import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Condition;
-import com.example.bot._for_shelter.models.Viewer;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.ViewerRepository;
+
 
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;

@@ -101,7 +101,13 @@ public class SendBotMessage {
     }
 
     public void deleteMessageWithMessageId(Update update, Integer messageId) {
-        String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
+        String chatId;
+        if (update.hasCallbackQuery()) {
+            chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
+        } else {
+            chatId = update.getMessage().getChatId().toString();
+        }
+
 
         DeleteMessage deleteMessage = new DeleteMessage();
         deleteMessage.setChatId(String.valueOf(chatId));

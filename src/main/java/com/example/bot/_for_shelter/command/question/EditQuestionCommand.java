@@ -4,20 +4,14 @@ import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Condition;
-import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Question;
-import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
-import com.example.bot._for_shelter.repository.RoomRepository;
-import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.util.List;
 
 @Component
 public class EditQuestionCommand implements Command {
@@ -28,6 +22,7 @@ public class EditQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
 
     private final ConditionRepository conditionRepository;
+
 
     public EditQuestionCommand(QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage,
                                ConditionRepository conditionRepository) {
@@ -43,15 +38,23 @@ public class EditQuestionCommand implements Command {
         String chatId = String.valueOf(update.getMessage().getChatId());
 
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        Question question = questionRepository.findById(Long.valueOf(condition.getCondition())).orElse(null);
-        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(Long.valueOf(condition.getCondition()));
+        String[] parts = condition.getCondition().split("-");
+
+        Question question = questionRepository.findById(Long.valueOf(parts[2])).orElse(null);
         question.setText(textMessage);
+        questionRepository.save(question);
+
+        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(Long.parseLong(parts[2]), update);
+
+
         condition.setCondition("Добавляю запросы");
 
         conditionRepository.save(condition);
-        questionRepository.save(question);
 
 
+        sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[3]));
+        sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[4]));
+        sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[5]));
 
         sendMessage(update, question, markUp);
     }
@@ -59,8 +62,8 @@ public class EditQuestionCommand implements Command {
     @Override
     public boolean isSupport(String update) {
         try {
-            Double.parseDouble(update);
-            return true;
+            String[] parts = update.split("-");
+            return parts[0].equals("Изменяю");
         } catch (NumberFormatException e) {
             return false;
         }
@@ -74,9 +77,5 @@ public class EditQuestionCommand implements Command {
 
         SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
         sendBotMessage.sendMessage(msg);
-
-        String nextQuestion = "Можете ввести следующий вопрос";
-        SendMessage msg2 = sendBotMessage.createMessage(update, nextQuestion);
-        sendBotMessage.sendMessage(msg2);
     }
 }
