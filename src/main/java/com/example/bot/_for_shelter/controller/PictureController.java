@@ -1,22 +1,34 @@
 package com.example.bot._for_shelter.controller;
 
 import com.example.bot._for_shelter.service.HelpService;
+import com.example.bot._for_shelter.service.WebSocketService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
-@Controller
-@RequiredArgsConstructor
+@RestController
 public class PictureController {
 
-    private final HelpService helpService;
+    private final WebSocketService webSocketService;
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/messages")
-    public String processMessageFromClient(String message) {
-        return "{\"response\" : \"" + helpService.test() + "\"}";
+    public PictureController(WebSocketService webSocketService) {
+        this.webSocketService = webSocketService;
+    }
+
+    @GetMapping("/send")
+    public String sendMessage(@RequestParam HashMap<String, Integer> message) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonString = objectMapper.writeValueAsString(message);
+        webSocketService.sendMessageToClients(jsonString);
+        return jsonString;
     }
 }

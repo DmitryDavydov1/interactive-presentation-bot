@@ -3,11 +3,9 @@ package com.example.bot._for_shelter.command.question;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
-import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
-import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.service.HelpService;
@@ -17,7 +15,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.util.List;
 
 @Component
 public class CreateQuestionCommand implements Command {
@@ -27,15 +24,15 @@ public class CreateQuestionCommand implements Command {
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
-    private final ConditionRepository conditionRepository;
 
-    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage, HelpService helpService, ConditionRepository conditionRepository) {
+
+    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps,
+                                 SendBotMessage sendBotMessage, HelpService helpService) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.questionRepository = questionRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
         this.helpService = helpService;
-        this.conditionRepository = conditionRepository;
     }
 
     @Override
