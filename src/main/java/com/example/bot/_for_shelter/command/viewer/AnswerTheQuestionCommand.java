@@ -38,7 +38,7 @@ public class AnswerTheQuestionCommand implements Command {
         String text = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
 
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         String[] conditionSplit = condition.getCondition().split(" ");
         int roomId = (int) Long.parseLong(conditionSplit[3]);
         Room room = roomRepository.findById(roomId).orElse(null);

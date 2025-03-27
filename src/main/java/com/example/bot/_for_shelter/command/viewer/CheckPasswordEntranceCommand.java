@@ -2,7 +2,6 @@ package com.example.bot._for_shelter.command.viewer;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
-import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
@@ -41,7 +40,7 @@ public class CheckPasswordEntranceCommand implements Command {
     public void execute(Update update) {
         String msg = update.getMessage().getText();
         String chatId = update.getMessage().getChatId().toString();
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
 
         int idRoom = Integer.parseInt(condition.getCondition().split(" ")[2]);
         Room room = roomRepository.findById(idRoom).orElse(null);

@@ -15,7 +15,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.util.List;
 
 @Component
 public class CreateQuestionCommand implements Command {
@@ -26,7 +25,9 @@ public class CreateQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
 
-    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage, HelpService helpService) {
+
+    public CreateQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, QuestionRepository questionRepository, MarkUps markUps,
+                                 SendBotMessage sendBotMessage, HelpService helpService) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.questionRepository = questionRepository;
         this.markUps = markUps;
@@ -46,21 +47,21 @@ public class CreateQuestionCommand implements Command {
         Question question = new Question();
         question.setRoom(roomWithStatusTrue);
         question.setText(update.getMessage().getText());
-        questionRepository.save(question);
 
+        questionRepository.save(question);
         sendMessage(update, question);
     }
 
     @Override
     public boolean isSupport(String update) {
-        return update.equals("Добавляю запросы");
+        return update.startsWith("Добавляю запросы");
     }
 
     private void sendMessage(Update update, Question question) {
         String correctedQuestion = "выбери действие с вопросом: \n" +
                 "«" + question.getText() + "»";
         long questionId = question.getId();
-        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId);
+        InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(questionId, update);
         SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
 
 
