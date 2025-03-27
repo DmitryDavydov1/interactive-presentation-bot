@@ -3,12 +3,9 @@ package com.example.bot._for_shelter.command.viewer;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Condition;
-import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
-import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -32,7 +29,7 @@ public class CheckIdForEntranceCommand implements Command {
         String chatId = update.getMessage().getChatId().toString();
         int message = Integer.parseInt(update.getMessage().getText());
 
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         Room roomWithStatusTrue = roomRepository.findByIdForEntry(message).orElse(null);
 
         sendMessage(update, condition, roomWithStatusTrue);

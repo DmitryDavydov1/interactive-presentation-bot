@@ -15,4 +15,9 @@ public class HelpService {
                 .filter(Room::isStatus) // Фильтруем по статусу
                 .findFirst().orElse(null);
     }
+
+
+    public String test() {
+        return "test";
+    }
 }

@@ -68,7 +68,7 @@ public class SetPasswordOnRoomCoomand implements Command {
 
 
     private void updateCondition(String chatId) {
-        Condition condition = conditionRepository.findByChatId(chatId);
+        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         if (condition != null) {
             condition.setCondition("Добавляю запросы");
             conditionRepository.save(condition);
