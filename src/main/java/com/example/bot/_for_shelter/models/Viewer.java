@@ -7,6 +7,9 @@ import java.util.List;
 
 @Data
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_viewer_chatId", columnList = "chatId", unique = true)
+})
 public class Viewer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

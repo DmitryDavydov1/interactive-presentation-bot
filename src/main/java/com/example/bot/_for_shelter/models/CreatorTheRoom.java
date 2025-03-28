@@ -11,6 +11,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Table(indexes = {
+        @Index(name = "idx_creator_chatId", columnList = "chatId", unique = true)
+})
 public class CreatorTheRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
