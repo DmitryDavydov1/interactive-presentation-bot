@@ -34,6 +34,7 @@ public class AnswerTheQuestionCommand implements Command {
     @Override
     @Transactional
     public void execute(Update update) {
+
         String text = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
 
@@ -49,65 +50,47 @@ public class AnswerTheQuestionCommand implements Command {
         }
 
         List<Question> questions = room.getQuestions();
-        long questionId = Long.parseLong(conditionSplit[4]);
-        Question question = questions.stream()
-                .filter(q -> q.getId() == questionId)
-                .findFirst()
-                .orElse(null);
-        
-        if (question == null) {
-            SendMessage message = sendBotMessage.createMessage(update, "Вопрос не найден");
-            sendBotMessage.sendMessage(message);
-            return;
-        }
+        int questionId = (int) Long.parseLong(conditionSplit[4]);
 
         Viewer viewer = viewerRepository.findByChatId(chatId);
+        Question question = questions.get(questionId);
         Answer answer = new Answer();
         answer.setQuestion(question);
         answer.setAnswer(text);
         answer.setViewer(viewer);
         answerRepository.save(answer);
 
-        // Находим следующий вопрос
-        Question nextQuestion = questions.stream()
-                .filter(q -> q.getId() > questionId)
-                .findFirst()
-                .orElse(null);
+        conditionSplit[4] = String.valueOf(questionId + 1);
+        String newCondition = String.join(" ", conditionSplit);
+        condition.setCondition(newCondition);
+        conditionRepository.save(condition);
 
-        if (nextQuestion == null) {
+
+        if (questionId == questions.size() - 1) {
             String newTextForViewer = "Вопросы кончились";
             SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
             condition.setCondition("Ответил на все вопросы");
             sendBotMessage.sendMessage(message);
             conditionRepository.save(condition);
         } else {
-            conditionSplit[4] = String.valueOf(nextQuestion.getId());
-            String newCondition = String.join(" ", conditionSplit);
-            condition.setCondition(newCondition);
-            conditionRepository.save(condition);
-
-            String newTextForViewer = "Ответь на этот вопрос " + nextQuestion.getText();
+            Question newQuestion = questions.get(questionId + 1);
+            String newTextForViewer = "Ответь на этот вопрос " + newQuestion.getText();
             SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
             sendBotMessage.sendMessage(message);
         }
     }
 
+
     @Override
     public boolean isSupport(String update) {
         try {
-            String regex = "Отвечаю на вопрос (\\d+) (\\d+)";
+            String regex = "Отвечаю на вопрос (\\d+)";
             Pattern pattern = Pattern.compile(regex);
             Matcher matcher = pattern.matcher(update);
 
-            if (matcher.find()) {
-                long roomId = Long.parseLong(matcher.group(1));
-                long questionId = Long.parseLong(matcher.group(2));
-                return roomId > 0 && questionId > 0;
-            }
-            return false;
+            return matcher.find();
         } catch (Exception e) {
             return false;
         }
     }
 }
-
