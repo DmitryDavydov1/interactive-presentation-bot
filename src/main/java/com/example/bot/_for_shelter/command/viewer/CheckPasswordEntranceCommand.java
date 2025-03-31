@@ -42,7 +42,7 @@ public class CheckPasswordEntranceCommand implements Command {
         String chatId = update.getMessage().getChatId().toString();
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
 
-        int idRoom = Integer.parseInt(condition.getCondition().split(" ")[2]);
+        long idRoom = Long.parseLong(condition.getCondition().split(" ")[2]);
         Room room = roomRepository.findById(idRoom).orElse(null);
 
         SendMessage sendMessage;

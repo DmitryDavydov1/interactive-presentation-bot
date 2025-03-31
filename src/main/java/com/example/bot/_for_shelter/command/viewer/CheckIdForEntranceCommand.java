@@ -25,15 +25,13 @@ public class CheckIdForEntranceCommand implements Command {
 
     @Override
     public void execute(Update update) {
-
         String chatId = update.getMessage().getChatId().toString();
-        int message = Integer.parseInt(update.getMessage().getText());
+        long message = Long.parseLong(update.getMessage().getText());
 
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        Room roomWithStatusTrue = roomRepository.findByIdForEntry(message).orElse(null);
+        Room roomWithStatusTrue = roomRepository.findByIdForEntry((int)message).orElse(null);
 
         sendMessage(update, condition, roomWithStatusTrue);
-
     }
 
     @Override

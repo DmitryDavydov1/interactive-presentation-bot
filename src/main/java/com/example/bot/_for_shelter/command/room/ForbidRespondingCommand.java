@@ -21,7 +21,7 @@ public class ForbidRespondingCommand implements Command {
     @Override
     public void execute(Update update) {
         String callbackData = update.getCallbackQuery().getData();
-        int textUpdate = Integer.parseInt(callbackData.split(" ")[2]);
+        long textUpdate = Long.parseLong(callbackData.split(" ")[2]);
 
         Room room = roomRepository.findById(textUpdate).orElse(null);
         assert room != null;

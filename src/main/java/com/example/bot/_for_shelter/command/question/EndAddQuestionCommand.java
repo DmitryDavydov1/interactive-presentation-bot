@@ -53,7 +53,7 @@ public class EndAddQuestionCommand implements Command {
         conditionRepository.save(condition);
 
 
-        int roomId = roomWithStatusTrue.getId();
+        long roomId = roomWithStatusTrue.getId();
         InlineKeyboardMarkup markUp = markUps.menuAfterAddQuestion(roomId);
         String answer = "Вы завершили добавление вопросов \nТеперь выберите пункт:";
 

@@ -18,7 +18,7 @@ import java.util.List;
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     private String password;
     private int idForEntry;
     @ManyToOne

@@ -41,7 +41,7 @@ public class ViewStatisticCommand implements Command {
 
         int count = 0;
         int respondingRightNow = 0;
-        List<Integer> questionIds = questions.stream().map(Question::getId).toList();
+        List<Long> questionIds = questions.stream().map(Question::getId).map(Long::valueOf).toList();
         for (Viewer viewer : viewers) {
             int numberOfReplies = answerRepository.numberReplies(questionIds, viewer.getId());
             if (questions.size() == numberOfReplies) {

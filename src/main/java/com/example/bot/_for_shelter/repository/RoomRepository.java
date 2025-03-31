@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface RoomRepository extends JpaRepository<Room, Integer> {
+public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByIdForEntry(int randomNumber);
 
     @Query("SELECT r FROM Room r WHERE r.idForEntry = :idForEntry")

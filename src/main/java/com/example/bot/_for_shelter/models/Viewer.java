@@ -13,7 +13,7 @@ import java.util.List;
 public class Viewer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     private String name;
     private String chatId;
     @OneToMany(mappedBy = "viewer", cascade = CascadeType.ALL, orphanRemoval = true)

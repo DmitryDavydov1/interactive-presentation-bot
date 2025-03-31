@@ -12,7 +12,7 @@ import lombok.Data;
 public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     @ManyToOne
     private Viewer viewer;
     @ManyToOne

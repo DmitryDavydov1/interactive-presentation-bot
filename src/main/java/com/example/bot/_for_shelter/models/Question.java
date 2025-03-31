@@ -18,7 +18,7 @@ import java.util.Map;
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     private String text;
     @ManyToOne
     private Room room;
