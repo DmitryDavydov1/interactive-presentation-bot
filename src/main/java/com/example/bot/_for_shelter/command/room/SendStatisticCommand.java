@@ -33,16 +33,21 @@ public class SendStatisticCommand implements Command {
     public void execute(Update update) {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
+
         Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
         List<Question> questions = roomWithStatusTrue.getQuestions();
         List<Viewer> viewers = roomWithStatusTrue.getViewers();
+
         StringBuilder answer = new StringBuilder();
         for (Question question : questions) {
+
+            //Получаем статистику по вопросу
             answer.append(question.getStatistic());
             String textMsg = answer.toString();
             if (textMsg.isEmpty()) {
                 return;
             }
+            //Отправляем статистику каждому гостю комнаты
             for (Viewer viewer : viewers) {
                 SendMessage msg = sendBotMessage.sendMessageForAll(viewer.getChatId(), textMsg);
                 sendBotMessage.sendMessage(msg);

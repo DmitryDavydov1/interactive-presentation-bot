@@ -50,14 +50,19 @@ public class CheckPasswordEntranceCommand implements Command {
             if (room.getPassword().equals(msg)) {
                 sendMessage = sendBotMessage.createMessage(update, "Пароль верный");
                 sendBotMessage.sendMessage(sendMessage);
+
+                //Добавляем пользователя в комнату
                 Viewer viewer = viewerRepository.findByChatId(chatId);
                 room.getViewers().add(viewer);
                 roomRepository.save(room);
 
-
+                //Обновляем condition
                 List<Question> questionList = room.getQuestions();
                 Question question = questionList.getFirst();
-                condition.setCondition("Отвечаю на вопрос " + room.getId() + " " + 0);
+
+                //Указываем roomId вопроса и нулевой индекс в спике вопросов
+                String textMsg = "Отвечаю на вопрос " + room.getId() + " " + 0;
+                condition.setCondition(textMsg);
                 conditionRepository.save(condition);
 
                 sendMessage.setText("Ответь на вопрос " + question.getText());

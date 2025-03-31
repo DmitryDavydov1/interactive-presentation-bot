@@ -35,7 +35,7 @@ public class CreateViewerCommand implements Command {
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         if (condition != null) {
             if (condition.getCondition().equals("Добавляю запросы")) {
-                SendMessage sendMessage = sendBotMessage.createMessage(update, "Сначала зверши ввоод вопросов");
+                SendMessage sendMessage = sendBotMessage.createMessage(update, "Сначала заверши ввод вопросов");
                 sendBotMessage.sendMessage(sendMessage);
                 return;
             }

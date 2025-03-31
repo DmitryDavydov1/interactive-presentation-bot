@@ -35,49 +35,40 @@ public class AnswerTheQuestionCommand implements Command {
     @Transactional
     public void execute(Update update) {
 
-        String text = update.getMessage().getText();
+        String answerText = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
 
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         String[] conditionSplit = condition.getCondition().split(" ");
+
         long roomId = Long.parseLong(conditionSplit[3]);
         Room room = roomRepository.findById(roomId).orElse(null);
+
         assert room != null;
+        //Проверяем принимает ли комната ответы
         if (!room.isAnswerStatus()) {
             SendMessage message = sendBotMessage.createMessage(update, "Ответы больше нельзя вводить");
             sendBotMessage.sendMessage(message);
             return;
         }
 
+        //Получаем список вопросов в комнате
         List<Question> questions = room.getQuestions();
-        int questionId = (int) Long.parseLong(conditionSplit[4]);
 
-        Viewer viewer = viewerRepository.findByChatId(chatId);
-        Question question = questions.get(questionId);
-        Answer answer = new Answer();
-        answer.setQuestion(question);
-        answer.setAnswer(text);
-        answer.setViewer(viewer);
-        answerRepository.save(answer);
+        //Получаем индекс вопроса в списке вопросов
+        int questionIndex = Integer.parseInt(conditionSplit[4]);
 
-        conditionSplit[4] = String.valueOf(questionId + 1);
+        saveAnswer(chatId, questionIndex, questions, answerText);
+
+        //Указываем индекс следующего вопроса в списке вопросов
+        conditionSplit[4] = String.valueOf(questionIndex + 1);
+
+        //Обновляем condition
         String newCondition = String.join(" ", conditionSplit);
         condition.setCondition(newCondition);
-        conditionRepository.save(condition);
 
-
-        if (questionId == questions.size() - 1) {
-            String newTextForViewer = "Вопросы кончились";
-            SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
-            condition.setCondition("Ответил на все вопросы");
-            sendBotMessage.sendMessage(message);
-            conditionRepository.save(condition);
-        } else {
-            Question newQuestion = questions.get(questionId + 1);
-            String newTextForViewer = "Ответь на этот вопрос " + newQuestion.getText();
-            SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
-            sendBotMessage.sendMessage(message);
-        }
+        //Спрашиваем следующий вопрос или сообщаем что вопросы кончились
+        sendMessage(questionIndex, questions, update, condition);
     }
 
 
@@ -91,6 +82,38 @@ public class AnswerTheQuestionCommand implements Command {
             return matcher.find();
         } catch (Exception e) {
             return false;
+        }
+    }
+
+
+    private void saveAnswer(String chatId, int questionIndex, List<Question> questionList, String answerText) {
+        //Находим отвечающего
+        Viewer viewer = viewerRepository.findByChatId(chatId);
+
+        //Находим вопрос по его индексу в списке вопросов
+        Question question = questionList.get(questionIndex);
+
+        Answer answer = new Answer();
+        answer.setQuestion(question);
+        answer.setAnswer(answerText);
+        answer.setViewer(viewer);
+        answerRepository.save(answer);
+    }
+
+    private void sendMessage(int questionIndex, List<Question> questions, Update update, Condition condition) {
+        if (questionIndex == questions.size() - 1) {
+            String newTextForViewer = "Вопросы кончились";
+            SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
+            condition.setCondition("Ответил на все вопросы");
+            sendBotMessage.sendMessage(message);
+            conditionRepository.save(condition);
+
+        } else {
+            conditionRepository.save(condition);
+            Question newQuestion = questions.get(questionIndex + 1);
+            String newTextForViewer = "Ответь на этот вопрос " + newQuestion.getText();
+            SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
+            sendBotMessage.sendMessage(message);
         }
     }
 }
