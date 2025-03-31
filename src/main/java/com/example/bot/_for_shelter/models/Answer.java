@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 @Table(indexes = {
         @Index(name = "idx_answer_question", columnList = "question_id"),
-        @Index(name = "idx_answer_viewer_question", columnList = "question_id, viewer_id")
+        @Index(name = "idx_answer_viewer_question", columnList = "viewer_id, question_id")
 })
 public class Answer {
     @Id
