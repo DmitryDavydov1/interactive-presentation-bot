@@ -31,28 +31,35 @@ public class ViewStatisticCommand implements Command {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         Room room = helpService.findLastRoomWithoutCashing(chatId);
 
-        String statisticMessage = generateStatistics(room);
-        SendMessage sendMessage = sendBotMessage.createMessage(update, statisticMessage);
-        sendBotMessage.sendMessage(sendMessage);
+        String statistics = generateStatistics(room);
+        SendMessage message = sendBotMessage.createMessage(update, statistics);
+        sendBotMessage.sendMessage(message);
     }
 
     private String generateStatistics(Room room) {
         List<Question> questions = room.getQuestions();
         List<Viewer> viewers = room.getViewers();
-        List<Long> questionIds = questions.stream().map(Question::getId).toList();
+        List<Long> questionIds = getQuestionIds(questions);
 
-        long completed = viewers.stream()
-                .filter(viewer -> answerRepository.numberReplies(questionIds, viewer.getId()) == questions.size())
-                .count();
+        long completedCount = getViewerCountByCondition(viewers, questionIds, true);
+        long inProgressCount = getViewerCountByCondition(viewers, questionIds, false);
 
-        long inProgress = viewers.stream()
+        return String.format("Ответили до конца: %d\nСейчас отвечает: %d", completedCount, inProgressCount);
+    }
+
+    private List<Long> getQuestionIds(List<Question> questions) {
+        return questions.stream()
+                .map(Question::getId)
+                .toList();
+    }
+
+    private long getViewerCountByCondition(List<Viewer> viewers, List<Long> questionIds, boolean isCompleted) {
+        return viewers.stream()
                 .filter(viewer -> {
                     int replies = answerRepository.numberReplies(questionIds, viewer.getId());
-                    return replies > 0 && replies < questions.size();
+                    return isCompleted ? replies == questionIds.size() : replies > 0 && replies < questionIds.size();
                 })
                 .count();
-
-        return String.format("Ответили до конца: %d\nСейчас отвечает: %d", completed, inProgress);
     }
 
     @Override

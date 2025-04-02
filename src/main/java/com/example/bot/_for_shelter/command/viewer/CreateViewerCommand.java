@@ -31,35 +31,44 @@ public class CreateViewerCommand implements Command {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
         String userName = update.getCallbackQuery().getFrom().getUserName();
 
-
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        if (condition != null) {
-            if (condition.getCondition().equals("Добавляю запросы")) {
-                SendMessage sendMessage = sendBotMessage.createMessage(update, "Сначала заверши ввод вопросов");
-                sendBotMessage.sendMessage(sendMessage);
-                return;
+        // Проверка состояния и отправка сообщения, если необходимо завершить ввод вопросов
+        conditionRepository.findByChatId(chatId).ifPresentOrElse(condition -> {
+            if ("Добавляю запросы".equals(condition.getCondition())) {
+                sendMessage(update, "Сначала заверши ввод вопросов");
+            } else {
+                processViewer(update, chatId, userName);
             }
-        }
-
-        InlineKeyboardMarkup markUp = markUps.menuForViewer();
-        SendMessage sendMessage = sendBotMessage.createMessageWithKeyboardMarkUpWithCallbackUpdate(update, "Выберите команду", markUp);
-
-        if (viewerRepository.existsByChatId(chatId)) {
-            sendBotMessage.sendMessage(sendMessage);
-            return;
-        }
-
-        Viewer viewer = new Viewer();
-        viewer.setChatId(chatId);
-        viewer.setName(userName);
-        viewerRepository.save(viewer);
-
-
-        sendBotMessage.sendMessage(sendMessage);
+        }, () -> processViewer(update, chatId, userName));
     }
 
     @Override
     public boolean isSupport(String update) {
         return update.equals("listener-button");
+    }
+
+    private void processViewer(Update update, String chatId, String userName) {
+        // Генерация клавиатуры
+        InlineKeyboardMarkup markUp = markUps.menuForViewer();
+        SendMessage sendMessage = sendBotMessage.createMessageWithKeyboardMarkUpWithCallbackUpdate(update, "Выберите команду", markUp);
+
+        // Проверка существования зрителя
+        if (viewerRepository.existsByChatId(chatId)) {
+            sendBotMessage.sendMessage(sendMessage);
+            return;
+        }
+
+        // Создание нового зрителя
+        Viewer viewer = new Viewer();
+        viewer.setChatId(chatId);
+        viewer.setName(userName);
+        viewerRepository.save(viewer);
+
+        // Отправка сообщения
+        sendBotMessage.sendMessage(sendMessage);
+    }
+
+    private void sendMessage(Update update, String message) {
+        SendMessage sendMessage = sendBotMessage.createMessage(update, message);
+        sendBotMessage.sendMessage(sendMessage);
     }
 }

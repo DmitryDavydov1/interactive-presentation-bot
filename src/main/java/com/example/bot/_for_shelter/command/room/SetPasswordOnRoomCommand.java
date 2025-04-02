@@ -3,10 +3,8 @@ package com.example.bot._for_shelter.command.room;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Condition;
-import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
@@ -36,11 +34,10 @@ public class SetPasswordOnRoomCommand implements Command {
     @Transactional
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
-        Room roomWithStatusTrue = helpService.findLastRoomWithoutCashing(chatId);
+        Room room = helpService.findLastRoomWithoutCashing(chatId);
 
-        roomWithStatusTrue.setPassword(update.getMessage().getText());
-        roomRepository.save(roomWithStatusTrue);
-
+        room.setPassword(update.getMessage().getText());
+        roomRepository.save(room);
 
         updateCondition(chatId);
         sendPasswordCreatedMessage(chatId);
@@ -48,15 +45,15 @@ public class SetPasswordOnRoomCommand implements Command {
 
     @Override
     public boolean isSupport(String update) {
-        return update.equals("создаю пароль");
+        return "создаю пароль".equals(update);
     }
 
     private void updateCondition(String chatId) {
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        if (condition != null) {
-            condition.setCondition("Добавляю запросы");
-            conditionRepository.save(condition);
-        }
+        conditionRepository.findByChatId(chatId)
+                .ifPresent(condition -> {
+                    condition.setCondition("Добавляю запросы");
+                    conditionRepository.save(condition);
+                });
     }
 
     private void sendPasswordCreatedMessage(String chatId) {
@@ -66,4 +63,3 @@ public class SetPasswordOnRoomCommand implements Command {
         sendBotMessage.sendMessage(msg);
     }
 }
-

@@ -39,24 +39,31 @@ public class AnswerTheQuestionCommand implements Command {
         String chatId = String.valueOf(update.getMessage().getChatId());
         String answerText = update.getMessage().getText();
 
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        if (condition == null) return;
+        // Получение текущего состояния из базы
+        Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);
+        if (conditionOpt.isEmpty()) return;
 
-        String[] conditionSplit = condition.getCondition().split(" ");
-        long roomId = Long.parseLong(conditionSplit[3]);
-        Room room = roomRepository.findById(roomId).orElse(null);
-        if (room == null || !room.isAnswerStatus()) {
+        Condition condition = conditionOpt.get();
+        String[] conditionParts = condition.getCondition().split(" ");
+        long roomId = Long.parseLong(conditionParts[3]);
+
+        // Проверка, что комната существует и разрешено вводить ответы
+        Optional<Room> roomOpt = roomRepository.findById(roomId);
+        if (roomOpt.isEmpty() || !roomOpt.get().isAnswerStatus()) {
             sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "Ответы больше нельзя вводить"));
             return;
         }
 
-        List<Question> questions = room.getQuestions();
-        int questionIndex = Integer.parseInt(conditionSplit[4]);
-        saveAnswer(chatId, questionIndex, questions, answerText);
+        List<Question> questions = roomOpt.get().getQuestions();
+        int currentQuestionIndex = Integer.parseInt(conditionParts[4]);
 
-        conditionSplit[4] = String.valueOf(questionIndex + 1);
-        condition.setCondition(String.join(" ", conditionSplit));
-        sendNextQuestionOrFinish(questionIndex, questions, update, condition);
+        // Сохранение ответа
+        saveAnswer(chatId, currentQuestionIndex, questions, answerText);
+
+        // Обновление индекса текущего вопроса и отправка следующего
+        conditionParts[4] = String.valueOf(currentQuestionIndex + 1);
+        condition.setCondition(String.join(" ", conditionParts));
+        sendNextQuestionOrFinish(currentQuestionIndex, questions, update, condition);
     }
 
     @Override
@@ -64,9 +71,10 @@ public class AnswerTheQuestionCommand implements Command {
         return ANSWER_PATTERN.matcher(update).find();
     }
 
-    private void saveAnswer(String chatId, int questionIndex, List<Question> questionList, String answerText) {
+    // Метод для сохранения ответа
+    private void saveAnswer(String chatId, int questionIndex, List<Question> questions, String answerText) {
         Viewer viewer = viewerRepository.findByChatId(chatId);
-        Question question = questionList.get(questionIndex);
+        Question question = questions.get(questionIndex);
 
         Answer answer = new Answer();
         answer.setAnswer(answerText);
@@ -75,12 +83,13 @@ public class AnswerTheQuestionCommand implements Command {
         answerRepository.save(answer);
     }
 
-    private void sendNextQuestionOrFinish(int questionIndex, List<Question> questions, Update update, Condition condition) {
-        if (questionIndex >= questions.size() - 1) {
+    // Метод для отправки следующего вопроса или завершения
+    private void sendNextQuestionOrFinish(int currentQuestionIndex, List<Question> questions, Update update, Condition condition) {
+        if (currentQuestionIndex >= questions.size() - 1) {
             sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "Вопросы кончились"));
             condition.setCondition("Ответил на все вопросы");
         } else {
-            Question nextQuestion = questions.get(questionIndex + 1);
+            Question nextQuestion = questions.get(currentQuestionIndex + 1);
             sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "Ответь на этот вопрос: " + nextQuestion.getText()));
         }
         conditionRepository.save(condition);

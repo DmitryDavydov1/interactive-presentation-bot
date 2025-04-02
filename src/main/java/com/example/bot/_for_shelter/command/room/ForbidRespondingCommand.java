@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class ForbidRespondingCommand implements Command {
+
     private final RoomRepository roomRepository;
     private final SendBotMessage sendBotMessage;
 
@@ -21,15 +22,16 @@ public class ForbidRespondingCommand implements Command {
     @Override
     public void execute(Update update) {
         String callbackData = update.getCallbackQuery().getData();
-        long textUpdate = Long.parseLong(callbackData.split(" ")[2]);
+        long roomId = Long.parseLong(callbackData.split(" ")[2]);
 
-        Room room = roomRepository.findById(textUpdate).orElse(null);
-        assert room != null;
-        room.setAnswerStatus(false);
-        roomRepository.save(room);
+        Room room = roomRepository.findById(roomId).orElse(null);
+        if (room != null) {
+            room.setAnswerStatus(false);
+            roomRepository.save(room);
 
-        SendMessage sendMessage = sendBotMessage.createMessage(update, "Слушатели больше не могу отвечать");
-        sendBotMessage.sendMessage(sendMessage);
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Слушатели больше не могут отвечать");
+            sendBotMessage.sendMessage(sendMessage);
+        }
     }
 
     @Override

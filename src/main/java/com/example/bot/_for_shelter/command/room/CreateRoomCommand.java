@@ -1,6 +1,5 @@
 package com.example.bot._for_shelter.command.room;
 
-
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Condition;
@@ -15,9 +14,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-
-import java.util.Random;
-
 @Component
 public class CreateRoomCommand implements Command {
 
@@ -30,7 +26,6 @@ public class CreateRoomCommand implements Command {
     public CreateRoomCommand(CreatorTheRoomRepository creatorTheRoomRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository) {
         this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.sendBotMessage = sendBotMessage;
-
         this.roomRepository = roomRepository;
         this.helpService = helpService;
         this.conditionRepository = conditionRepository;
@@ -39,47 +34,55 @@ public class CreateRoomCommand implements Command {
     @Override
     @Transactional
     public void execute(Update update) {
+        String chatId = getChatId(update);
 
-        String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-
+        // Проверка существующей комнаты
         Room roomWithStatusTrue = helpService.findLastRoom(chatId);
         if (roomWithStatusTrue != null) {
             roomWithStatusTrue.setStatus(false);
             roomRepository.save(roomWithStatusTrue);
         }
-        Room updateRoom = helpService.updateRoom(creatorTheRoom);
 
-        updateCondition(chatId);
-        sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
+        // Обновление или создание новой комнаты
+        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
+        if (creatorTheRoom != null) {
+            Room updateRoom = helpService.updateRoom(creatorTheRoom);
+            updateCondition(chatId);
+            sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
+        }
     }
-
 
     @Override
     public boolean isSupport(String update) {
-        return update.equals("create_room");
+        return "create_room".equals(update);
     }
 
+    private String getChatId(Update update) {
+        // Дополнительная проверка, если в update нет нужной информации
+        if (update.getCallbackQuery() != null && update.getCallbackQuery().getMessage() != null) {
+            return String.valueOf(update.getCallbackQuery().getMessage().getChatId());
+        }
+        return "";  // Или можно выбросить исключение
+    }
 
     private void updateCondition(String chatId) {
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        if (condition != null) {
-            condition.setCondition("создаю пароль");
-            conditionRepository.save(condition);
-        } else {
-            Condition condition1 = new Condition();
-            condition1.setCondition("создаю пароль");
-            condition1.setChatId(chatId);
-            conditionRepository.save(condition1);
-        }
-
+        Condition condition = conditionRepository.findByChatId(chatId).orElseGet(() -> createCondition(chatId));
+        condition.setCondition("создаю пароль");
+        conditionRepository.save(condition);
     }
 
+    private Condition createCondition(String chatId) {
+        Condition condition = new Condition();
+        condition.setChatId(chatId);
+        condition.setCondition("создаю пароль");
+        return condition;
+    }
 
     private void sendRoomCreatedMessage(Update update, int roomId) {
         String text = "Комната создана, ее ID для входа: " + roomId + "\nТеперь придумай пароль для комнаты.";
         SendMessage msg = sendBotMessage.createMessage(update, text);
         sendBotMessage.sendMessage(msg);
     }
+
 
 }
