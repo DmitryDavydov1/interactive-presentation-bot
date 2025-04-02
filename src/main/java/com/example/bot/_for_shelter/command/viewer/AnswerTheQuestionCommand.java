@@ -10,11 +10,13 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Component
 public class AnswerTheQuestionCommand implements Command {
+    private static final Pattern ANSWER_PATTERN = Pattern.compile("Отвечаю на вопрос (\\d+)");
+
     private final AnswerRepository answerRepository;
     private final ConditionRepository conditionRepository;
     private final ViewerRepository viewerRepository;
@@ -22,11 +24,11 @@ public class AnswerTheQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
 
     public AnswerTheQuestionCommand(AnswerRepository answerRepository, ConditionRepository conditionRepository,
-                                    QuestionRepository questionRepository, ViewerRepository viewerRepository, ViewerRepository viewerRepository1,
-                                    RoomRepository roomRepository, SendBotMessage sendBotMessage) {
+                                    ViewerRepository viewerRepository, RoomRepository roomRepository,
+                                    SendBotMessage sendBotMessage) {
         this.answerRepository = answerRepository;
         this.conditionRepository = conditionRepository;
-        this.viewerRepository = viewerRepository1;
+        this.viewerRepository = viewerRepository;
         this.roomRepository = roomRepository;
         this.sendBotMessage = sendBotMessage;
     }
@@ -34,63 +36,62 @@ public class AnswerTheQuestionCommand implements Command {
     @Override
     @Transactional
     public void execute(Update update) {
-
-        String text = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
+        String answerText = update.getMessage().getText();
 
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        String[] conditionSplit = condition.getCondition().split(" ");
-        int roomId = (int) Long.parseLong(conditionSplit[3]);
-        Room room = roomRepository.findById(roomId).orElse(null);
-        assert room != null;
-        if (!room.isAnswerStatus()) {
-            SendMessage message = sendBotMessage.createMessage(update, "Ответы больше нельзя вводить");
-            sendBotMessage.sendMessage(message);
+        // Получение текущего состояния из базы
+        Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);
+        if (conditionOpt.isEmpty()) return;
+
+        Condition condition = conditionOpt.get();
+        String[] conditionParts = condition.getCondition().split(" ");
+        long roomId = Long.parseLong(conditionParts[3]);
+
+        // Проверка, что комната существует и разрешено вводить ответы
+        Optional<Room> roomOpt = roomRepository.findById(roomId);
+        if (roomOpt.isEmpty() || !roomOpt.get().isAnswerStatus()) {
+            sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "Ответы больше нельзя вводить"));
             return;
         }
 
-        List<Question> questions = room.getQuestions();
-        int questionId = (int) Long.parseLong(conditionSplit[4]);
+        List<Question> questions = roomOpt.get().getQuestions();
+        int currentQuestionIndex = Integer.parseInt(conditionParts[4]);
 
-        Viewer viewer = viewerRepository.findByChatId(chatId);
-        Question question = questions.get(questionId);
-        Answer answer = new Answer();
-        answer.setQuestion(question);
-        answer.setAnswer(text);
-        answer.setViewer(viewer);
-        answerRepository.save(answer);
+        // Сохранение ответа
+        saveAnswer(chatId, currentQuestionIndex, questions, answerText);
 
-        conditionSplit[4] = String.valueOf(questionId + 1);
-        String newCondition = String.join(" ", conditionSplit);
-        condition.setCondition(newCondition);
-        conditionRepository.save(condition);
-
-
-        if (questionId == questions.size() - 1) {
-            String newTextForViewer = "Вопросы кончились";
-            SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
-            condition.setCondition("Ответил на все вопросы");
-            sendBotMessage.sendMessage(message);
-            conditionRepository.save(condition);
-        } else {
-            Question newQuestion = questions.get(questionId + 1);
-            String newTextForViewer = "Ответь на этот вопрос " + newQuestion.getText();
-            SendMessage message = sendBotMessage.createMessage(update, newTextForViewer);
-            sendBotMessage.sendMessage(message);
-        }
+        // Обновление индекса текущего вопроса и отправка следующего
+        conditionParts[4] = String.valueOf(currentQuestionIndex + 1);
+        condition.setCondition(String.join(" ", conditionParts));
+        sendNextQuestionOrFinish(currentQuestionIndex, questions, update, condition);
     }
-
 
     @Override
     public boolean isSupport(String update) {
-        try {
-            String regex = "Отвечаю на вопрос (\\d+)";
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(update);
+        return ANSWER_PATTERN.matcher(update).find();
+    }
 
-            return matcher.find();
-        } catch (Exception e) {
-            return false;
+    // Метод для сохранения ответа
+    private void saveAnswer(String chatId, int questionIndex, List<Question> questions, String answerText) {
+        Viewer viewer = viewerRepository.findByChatId(chatId);
+        Question question = questions.get(questionIndex);
+
+        Answer answer = new Answer();
+        answer.setAnswer(answerText);
+        answer.setQuestion(question);
+        answer.setViewer(viewer);
+        answerRepository.save(answer);
+    }
+
+    // Метод для отправки следующего вопроса или завершения
+    private void sendNextQuestionOrFinish(int currentQuestionIndex, List<Question> questions, Update update, Condition condition) {
+        if (currentQuestionIndex >= questions.size() - 1) {
+            sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "Вопросы кончились"));
+            condition.setCondition("Ответил на все вопросы");
+        } else {
+            Question nextQuestion = questions.get(currentQuestionIndex + 1);
+            sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "Ответь на этот вопрос: " + nextQuestion.getText()));
         }
+        conditionRepository.save(condition);
     }
 }

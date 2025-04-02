@@ -135,7 +135,7 @@ public class MarkUps {
     }
 
 
-    public InlineKeyboardMarkup menuAfterAddQuestion(int roomId) {
+    public InlineKeyboardMarkup menuAfterAddQuestion(long roomId) {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
@@ -175,8 +175,8 @@ public class MarkUps {
         rowsInLine.add(rowInLine2);
         rowsInLine.add(rowInLine3);
         rowsInLine.add(rowInLine4);
-        markupInLine.setKeyboard(rowsInLine);
 
+        markupInLine.setKeyboard(rowsInLine);
         return markupInLine;
     }
 }

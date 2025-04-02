@@ -5,50 +5,50 @@ import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.RoomRepository;
+import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.util.Optional;
+
 @Component
 public class CheckIdForEntranceCommand implements Command {
+
     private final ConditionRepository conditionRepository;
     private final SendBotMessage sendBotMessage;
-    private final RoomRepository roomRepository;
+    private final HelpService helpService;
 
-    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository1) {
+    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, HelpService helpService) {
         this.conditionRepository = conditionRepository;
-
         this.sendBotMessage = sendBotMessage;
-        this.roomRepository = roomRepository1;
+        this.helpService = helpService;
     }
 
     @Override
     public void execute(Update update) {
+        String chatId = String.valueOf(update.getMessage().getChatId());
+        long roomId = Long.parseLong(update.getMessage().getText());
 
-        String chatId = update.getMessage().getChatId().toString();
-        int message = Integer.parseInt(update.getMessage().getText());
+        Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);
+        Room room = helpService.findRoomByIdForEntry(roomId);
 
-        Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        Room roomWithStatusTrue = roomRepository.findByIdForEntry(message).orElse(null);
-
-        sendMessage(update, condition, roomWithStatusTrue);
-
+        sendMessage(update, conditionOpt.orElse(null), room);
     }
 
     @Override
     public boolean isSupport(String update) {
-        return update.equals("Ввожу id комнаты");
+        return "Ввожу id комнаты".equals(update);
     }
 
-    public void sendMessage(Update update, Condition condition, Room room) {
-        SendMessage msg = sendBotMessage.createMessage(update, "Теперь введи пароль от комнаты");
-        if (room == null) {
-            msg.setText("Комната не найдена");
-        } else {
+    private void sendMessage(Update update, Condition condition, Room room) {
+        SendMessage msg = sendBotMessage.createMessage(update, room == null ? "Комната не найдена" : "Теперь введи пароль от комнаты");
+
+        if (room != null) {
             condition.setCondition("вводит пароль " + room.getId());
             conditionRepository.save(condition);
         }
+
         sendBotMessage.sendMessage(msg);
     }
 }

@@ -12,10 +12,13 @@ import java.util.Map;
 @Entity
 @Getter
 @Setter
+@Table(indexes = {
+        @Index(name = "idx_question_room", columnList = "room_id")
+})
 public class Question {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
     private String text;
     @ManyToOne
     private Room room;
