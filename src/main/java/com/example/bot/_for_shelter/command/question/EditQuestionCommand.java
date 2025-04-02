@@ -12,17 +12,13 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-
 @Component
 public class EditQuestionCommand implements Command {
 
     private final QuestionRepository questionRepository;
-
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
-
     private final ConditionRepository conditionRepository;
-
 
     public EditQuestionCommand(QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage,
                                ConditionRepository conditionRepository) {
@@ -34,28 +30,38 @@ public class EditQuestionCommand implements Command {
 
     @Override
     public void execute(Update update) {
-        String textMessage = update.getMessage().getText();
         String chatId = String.valueOf(update.getMessage().getChatId());
 
+        // Получение условия
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        String[] parts = condition.getCondition().split("-");
+        if (condition == null) {
+            sendErrorMessage(update, "Не найдено активное состояние для вашего чата.");
+            return;
+        }
 
+        // Разбор условия и обновление вопроса
+        String[] parts = condition.getCondition().split("-");
         Question question = questionRepository.findById(Long.valueOf(parts[2])).orElse(null);
-        question.setText(textMessage);
+        if (question == null) {
+            sendErrorMessage(update, "Вопрос с таким ID не найден.");
+            return;
+        }
+
+        // Обновление текста вопроса
+        question.setText(update.getMessage().getText());
         questionRepository.save(question);
 
+        // Создание клавиатуры для действий с вопросом
         InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(Long.parseLong(parts[2]), update);
 
-
+        // Обновление состояния
         condition.setCondition("Добавляю запросы");
-
         conditionRepository.save(condition);
 
+        // Удаление предыдущих сообщений
+        deleteMessages(update, parts);
 
-        sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[3]));
-        sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[4]));
-        sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[5]));
-
+        // Отправка обновленного вопроса
         sendMessage(update, question, markUp);
     }
 
@@ -67,15 +73,31 @@ public class EditQuestionCommand implements Command {
         } catch (NumberFormatException e) {
             return false;
         }
-
     }
 
+    // Метод для отправки сообщения об ошибке
+    private void sendErrorMessage(Update update, String errorMessage) {
+        SendMessage msg = sendBotMessage.createMessage(update, errorMessage);
+        sendBotMessage.sendMessage(msg);
+    }
+
+    // Метод для отправки сообщения с обновленным вопросом
     private void sendMessage(Update update, Question question, InlineKeyboardMarkup markUp) {
-
-        String correctedQuestion = "выбери действие с вопросом: \n" +
+        String correctedQuestion = "Выберите действие с вопросом: \n" +
                 "«" + question.getText() + "»";
-
         SendMessage msg = sendBotMessage.createMessageWithKeyboardMarkUpWithTextUpdate(update, correctedQuestion, markUp);
         sendBotMessage.sendMessage(msg);
+    }
+
+    // Метод для удаления сообщений
+    private void deleteMessages(Update update, String[] parts) {
+        try {
+            sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[3]));
+            sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[4]));
+            sendBotMessage.deleteMessageWithMessageId(update, Integer.valueOf(parts[5]));
+        } catch (NumberFormatException e) {
+            // Если не удается преобразовать id сообщений, логируем ошибку
+            System.err.println("Ошибка при удалении сообщений: " + e.getMessage());
+        }
     }
 }
