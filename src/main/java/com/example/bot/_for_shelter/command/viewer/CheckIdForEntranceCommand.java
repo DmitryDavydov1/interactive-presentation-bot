@@ -6,6 +6,8 @@ import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
+import com.example.bot._for_shelter.service.HelpService;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -14,13 +16,13 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class CheckIdForEntranceCommand implements Command {
     private final ConditionRepository conditionRepository;
     private final SendBotMessage sendBotMessage;
-    private final RoomRepository roomRepository;
+    private final HelpService helpService;
 
-    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository1) {
+    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, HelpService helpService) {
         this.conditionRepository = conditionRepository;
 
         this.sendBotMessage = sendBotMessage;
-        this.roomRepository = roomRepository1;
+        this.helpService = helpService;
     }
 
     @Override
@@ -29,7 +31,7 @@ public class CheckIdForEntranceCommand implements Command {
         long message = Long.parseLong(update.getMessage().getText());
 
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
-        Room roomWithStatusTrue = roomRepository.findByIdForEntry((int)message).orElse(null);
+        Room roomWithStatusTrue = helpService.findRoomByIdForEntry(message);
 
         sendMessage(update, condition, roomWithStatusTrue);
     }
@@ -49,4 +51,6 @@ public class CheckIdForEntranceCommand implements Command {
         }
         sendBotMessage.sendMessage(msg);
     }
+
+
 }

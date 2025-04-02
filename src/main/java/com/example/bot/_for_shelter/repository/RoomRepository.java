@@ -11,5 +11,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     boolean existsByIdForEntry(int randomNumber);
 
     @Query("SELECT r FROM Room r WHERE r.idForEntry = :idForEntry")
-    Optional<Room> findByIdForEntry(int idForEntry);
+    Optional<Room> findByIdForEntry(long idForEntry);
+
 }

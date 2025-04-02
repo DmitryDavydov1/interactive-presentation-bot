@@ -18,18 +18,15 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class SetPasswordOnRoomCommand implements Command {
 
     private final RoomRepository roomRepository;
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
     private final ConditionRepository conditionRepository;
 
-    public SetPasswordOnRoomCommand(RoomRepository roomRepository, 
-                                  CreatorTheRoomRepository creatorTheRoomRepository, 
-                                  SendBotMessage sendBotMessage, 
-                                  HelpService helpService, 
-                                  ConditionRepository conditionRepository) {
+    public SetPasswordOnRoomCommand(RoomRepository roomRepository,
+                                    SendBotMessage sendBotMessage,
+                                    HelpService helpService,
+                                    ConditionRepository conditionRepository) {
         this.roomRepository = roomRepository;
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
         this.sendBotMessage = sendBotMessage;
         this.helpService = helpService;
         this.conditionRepository = conditionRepository;
@@ -39,13 +36,12 @@ public class SetPasswordOnRoomCommand implements Command {
     @Transactional
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
-        
+        Room roomWithStatusTrue = helpService.findLastRoomWithoutCashing(chatId);
+
         roomWithStatusTrue.setPassword(update.getMessage().getText());
         roomRepository.save(roomWithStatusTrue);
-        creatorTheRoomRepository.save(creatorTheRoom);
-        
+
+
         updateCondition(chatId);
         sendPasswordCreatedMessage(chatId);
     }

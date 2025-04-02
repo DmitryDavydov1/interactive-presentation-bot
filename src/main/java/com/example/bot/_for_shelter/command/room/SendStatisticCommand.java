@@ -32,9 +32,8 @@ public class SendStatisticCommand implements Command {
     @Transactional
     public void execute(Update update) {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
 
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        Room roomWithStatusTrue = helpService.findLastRoomWithoutCashing(chatId);
         List<Question> questions = roomWithStatusTrue.getQuestions();
         List<Viewer> viewers = roomWithStatusTrue.getViewers();
 

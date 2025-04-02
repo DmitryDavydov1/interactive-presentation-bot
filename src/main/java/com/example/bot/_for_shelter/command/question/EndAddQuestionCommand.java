@@ -20,20 +20,18 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 @Component
 public class EndAddQuestionCommand implements Command {
 
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final HelpService helpService;
-    private final RoomRepository roomRepository;
     private final ConditionRepository conditionRepository;
     private final SendBotMessage sendBotMessage;
     private final MarkUps markUps;
+    private final RoomRepository roomRepository;
 
-    public EndAddQuestionCommand(CreatorTheRoomRepository creatorTheRoomRepository, HelpService helpService, RoomRepository roomRepository, ConditionRepository conditionRepository, SendBotMessage sendBotMessage, MarkUps markUps) {
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
+    public EndAddQuestionCommand(HelpService helpService, RoomRepository roomRepository, ConditionRepository conditionRepository, SendBotMessage sendBotMessage, MarkUps markUps, RoomRepository roomRepository1) {
         this.helpService = helpService;
-        this.roomRepository = roomRepository;
         this.conditionRepository = conditionRepository;
         this.sendBotMessage = sendBotMessage;
         this.markUps = markUps;
+        this.roomRepository = roomRepository1;
     }
 
     @Override
@@ -41,12 +39,12 @@ public class EndAddQuestionCommand implements Command {
     public void execute(Update update) {
         String chatId = update.getCallbackQuery().getMessage().getChatId().toString();
 
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        Room roomWithStatusTrue = helpService.findLastRoomWithoutCashing(chatId);
 
 
-        roomRepository.save(roomWithStatusTrue);
+
         roomWithStatusTrue.setQuestionStatus(false);
+        roomRepository.save(roomWithStatusTrue);
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
         assert condition != null;
         condition.setCondition("Завершил добавление вопросов");

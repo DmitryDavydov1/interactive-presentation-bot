@@ -43,39 +43,21 @@ public class CreateRoomCommand implements Command {
         String chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
         CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
 
-        Room roomWithStatusTrue = helpService.findLastRoom(creatorTheRoom);
+        Room roomWithStatusTrue = helpService.findLastRoom(chatId);
         if (roomWithStatusTrue != null) {
             roomWithStatusTrue.setStatus(false);
             roomRepository.save(roomWithStatusTrue);
         }
-        Room room = new Room();
-        room.setCreatorTheRoom(creatorTheRoom);
-        room.setStatus(true);
-        room.setQuestionStatus(true);
-        room.setAnswerStatus(true);
-
-        int random = makeRandomNumber();
-        room.setIdForEntry(random);
-        roomRepository.save(room);
+        Room updateRoom = helpService.updateRoom(creatorTheRoom);
 
         updateCondition(chatId);
-        sendRoomCreatedMessage(update, random);
+        sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
     }
 
 
     @Override
     public boolean isSupport(String update) {
         return update.equals("create_room");
-    }
-
-
-    private int makeRandomNumber() {
-        Random random = new Random();
-        int randomNumber = random.nextInt(1000) + 1;
-        while (roomRepository.existsByIdForEntry(randomNumber)) {
-            randomNumber = random.nextInt(1000) + 1;
-        }
-        return randomNumber;
     }
 
 
