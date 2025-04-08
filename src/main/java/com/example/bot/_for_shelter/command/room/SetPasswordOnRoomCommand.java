@@ -34,7 +34,7 @@ public class SetPasswordOnRoomCommand implements Command {
     @Transactional
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
-        Room room = helpService.findLastRoomWithoutCashing(chatId);
+        Room room = helpService.findLastRoom(chatId);
 
         room.setPassword(update.getMessage().getText());
         roomRepository.save(room);

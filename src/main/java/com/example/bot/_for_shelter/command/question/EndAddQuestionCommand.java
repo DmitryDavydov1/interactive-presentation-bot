@@ -23,7 +23,6 @@ public class EndAddQuestionCommand implements Command {
     private final MarkUps markUps;
     private final RoomRepository roomRepository;
 
-    // Убираем лишний параметр из конструктора
     public EndAddQuestionCommand(HelpService helpService, RoomRepository roomRepository,
                                  ConditionRepository conditionRepository, SendBotMessage sendBotMessage,
                                  MarkUps markUps) {
