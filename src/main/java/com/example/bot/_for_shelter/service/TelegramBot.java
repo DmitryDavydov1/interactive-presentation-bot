@@ -8,9 +8,12 @@ import com.example.bot._for_shelter.repository.ConditionRepository;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.io.File;
 import java.util.List;
 
 import com.example.bot._for_shelter.models.Condition;
@@ -82,10 +85,20 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public int sendMessage(SendMessage sendMessage) throws TelegramApiException {
         Message sentMessage = execute(sendMessage);
-        Integer messageId = sentMessage.getMessageId();
 
-        System.out.println("Отправлено сообщение с message_id: " + messageId);
-        return messageId;
+        return sentMessage.getMessageId();
+    }
+
+    public void SendPhoto(File file, String chatId) {
+        SendPhoto sendPhoto = new SendPhoto();
+        sendPhoto.setChatId(chatId);
+        sendPhoto.setPhoto(new InputFile(file));
+        try {
+            execute(sendPhoto);
+            System.out.println("Изображение отправлено в Telegram!");
+        } catch (TelegramApiException e) {
+            System.err.println("Ошибка при отправке изображения в Telegram: " + e.getMessage());
+        }
     }
 }
 

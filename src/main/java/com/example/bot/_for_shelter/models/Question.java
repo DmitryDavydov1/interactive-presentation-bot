@@ -26,7 +26,7 @@ public class Question {
     private List<Answer> answers;
 
 
-    public String getStatistic() {
+    public Map<String, Integer> getStatistic() {
         Map<String, Integer> wordCount = new HashMap<>();
 
 
@@ -34,14 +34,7 @@ public class Question {
             wordCount.put(answer.getAnswer(), wordCount.getOrDefault(answer.getAnswer(), 0) + 1);
         }
 
-        StringBuilder answer = new StringBuilder();
-        for (Map.Entry<String, Integer> entry : wordCount.entrySet()) {
-            answer.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
-        }
-
-        return answer.toString();
-
-
+        System.out.println(wordCount);
+        return wordCount;
     }
-
 }
