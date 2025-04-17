@@ -20,8 +20,10 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String text;
+
     @ManyToOne
     private Room room;
+
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Answer> answers;
 

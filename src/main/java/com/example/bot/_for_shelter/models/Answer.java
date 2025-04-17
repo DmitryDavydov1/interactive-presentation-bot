@@ -7,14 +7,14 @@ import lombok.Data;
 @Data
 @Table(indexes = {
         @Index(name = "idx_answer_question", columnList = "question_id"),
-        @Index(name = "idx_answer_viewer_question", columnList = "viewer_id, question_id")
+        @Index(name = "idx_answer_viewer_question", columnList = "user_id, question_id")
 })
 public class Answer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @ManyToOne
-    private Viewer viewer;
+    private User user;
     @ManyToOne
     private Question question;
     private String answer;

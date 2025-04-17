@@ -1,8 +1,8 @@
 package com.example.bot._for_shelter.command;
 
 import com.example.bot._for_shelter.mark_ups.MarkUps;
-import com.example.bot._for_shelter.models.CreatorTheRoom;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
+import com.example.bot._for_shelter.models.User;
+import com.example.bot._for_shelter.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -11,14 +11,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 @Component
 public class CreateRoomCreatorCommand implements Command {
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
+    private final UserRepository userRepository;
 
-    public CreateRoomCreatorCommand(CreatorTheRoomRepository creatorTheRoomRepository, MarkUps markUps, SendBotMessage sendBotMessage) {
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
+    public CreateRoomCreatorCommand(MarkUps markUps, SendBotMessage sendBotMessage, UserRepository userRepository) {
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -36,20 +36,20 @@ public class CreateRoomCreatorCommand implements Command {
 
 
         //Проверяем есть ли у нас уже этот creator the room или нет
-        if (creatorTheRoomRepository.existsByChatId(chatId)) {
+        if (userRepository.existsByChatId(chatId)) {
             sendBotMessage.sendMessage(msg);
             return;
         }
 
         //если нет, то создаем нового creator the room
-        CreatorTheRoom creatorTheRoom = new CreatorTheRoom();
+        User creatorTheRoom = new User();
 
-        creatorTheRoom.setName(update.getCallbackQuery().getFrom().getUserName());
+
         creatorTheRoom.setChatId(chatId);
 
         //отправляет сообщение и сохраняет creator the room
         sendBotMessage.sendMessage(msg);
-        creatorTheRoomRepository.save(creatorTheRoom);
+        userRepository.save(creatorTheRoom);
     }
 
     @Override

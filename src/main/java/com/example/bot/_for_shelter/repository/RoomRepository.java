@@ -1,6 +1,5 @@
 package com.example.bot._for_shelter.repository;
 
-import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

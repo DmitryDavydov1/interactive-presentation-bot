@@ -6,7 +6,6 @@ import com.example.bot._for_shelter.models.*;
 import com.example.bot._for_shelter.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
@@ -19,18 +18,18 @@ public class AnswerTheQuestionCommand implements Command {
 
     private final AnswerRepository answerRepository;
     private final ConditionRepository conditionRepository;
-    private final ViewerRepository viewerRepository;
     private final RoomRepository roomRepository;
     private final SendBotMessage sendBotMessage;
+    private final UserRepository userRepository;
 
     public AnswerTheQuestionCommand(AnswerRepository answerRepository, ConditionRepository conditionRepository,
-                                    ViewerRepository viewerRepository, RoomRepository roomRepository,
-                                    SendBotMessage sendBotMessage) {
+                                    RoomRepository roomRepository,
+                                    SendBotMessage sendBotMessage, UserRepository userRepository) {
         this.answerRepository = answerRepository;
         this.conditionRepository = conditionRepository;
-        this.viewerRepository = viewerRepository;
         this.roomRepository = roomRepository;
         this.sendBotMessage = sendBotMessage;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -73,13 +72,13 @@ public class AnswerTheQuestionCommand implements Command {
 
     // Метод для сохранения ответа
     private void saveAnswer(String chatId, int questionIndex, List<Question> questions, String answerText) {
-        Viewer viewer = viewerRepository.findByChatId(chatId);
+        User user = userRepository.findByChatId(chatId).orElse(null);
         Question question = questions.get(questionIndex);
 
         Answer answer = new Answer();
         answer.setAnswer(answerText);
         answer.setQuestion(question);
-        answer.setViewer(viewer);
+        answer.setUser(user);
         answerRepository.save(answer);
     }
 

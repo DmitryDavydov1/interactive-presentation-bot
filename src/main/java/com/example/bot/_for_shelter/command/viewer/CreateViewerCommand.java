@@ -3,10 +3,9 @@ package com.example.bot._for_shelter.command.viewer;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
-import com.example.bot._for_shelter.models.Condition;
-import com.example.bot._for_shelter.models.Viewer;
+import com.example.bot._for_shelter.models.User;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.ViewerRepository;
+import com.example.bot._for_shelter.repository.UserRepository;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -14,16 +13,16 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 
 @Component
 public class CreateViewerCommand implements Command {
-    private final ViewerRepository viewerRepository;
     private final SendBotMessage sendBotMessage;
     private final MarkUps markUps;
     private final ConditionRepository conditionRepository;
+    private final UserRepository userRepository;
 
-    public CreateViewerCommand(ViewerRepository viewerRepository, SendBotMessage sendBotMessage, MarkUps markUps, ConditionRepository conditionRepository) {
-        this.viewerRepository = viewerRepository;
+    public CreateViewerCommand(SendBotMessage sendBotMessage, MarkUps markUps, ConditionRepository conditionRepository, UserRepository userRepository) {
         this.sendBotMessage = sendBotMessage;
         this.markUps = markUps;
         this.conditionRepository = conditionRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -52,16 +51,15 @@ public class CreateViewerCommand implements Command {
         SendMessage sendMessage = sendBotMessage.createMessageWithKeyboardMarkUpWithCallbackUpdate(update, "Выберите команду", markUp);
 
         // Проверка существования зрителя
-        if (viewerRepository.existsByChatId(chatId)) {
+        if (userRepository.existsByChatId(chatId)) {
             sendBotMessage.sendMessage(sendMessage);
             return;
         }
 
         // Создание нового зрителя
-        Viewer viewer = new Viewer();
+        User viewer = new User();
         viewer.setChatId(chatId);
-        viewer.setName(userName);
-        viewerRepository.save(viewer);
+        userRepository.save(viewer);
 
         // Отправка сообщения
         sendBotMessage.sendMessage(sendMessage);

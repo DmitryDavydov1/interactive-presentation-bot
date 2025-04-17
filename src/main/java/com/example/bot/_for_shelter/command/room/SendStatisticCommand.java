@@ -2,17 +2,15 @@ package com.example.bot._for_shelter.command.room;
 
 import com.example.bot._for_shelter.CustomWordCloud;
 import com.example.bot._for_shelter.command.Command;
-import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
-import com.example.bot._for_shelter.models.Viewer;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
+import com.example.bot._for_shelter.models.User;
+import com.example.bot._for_shelter.repository.UserRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import com.example.bot._for_shelter.service.TelegramBot;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -28,7 +26,7 @@ public class SendStatisticCommand implements Command {
     private final TelegramBot telegramBot;
 
     @Lazy
-    public SendStatisticCommand(HelpService helpService, SendBotMessage sendBotMessage, CreatorTheRoomRepository creatorTheRoomRepository, CustomWordCloud customWordCloud, TelegramBot telegramBot) {
+    public SendStatisticCommand(HelpService helpService, CustomWordCloud customWordCloud, TelegramBot telegramBot, UserRepository userRepository) {
         this.helpService = helpService;
         this.customWordCloud = customWordCloud;
         this.telegramBot = telegramBot;
@@ -41,9 +39,9 @@ public class SendStatisticCommand implements Command {
 
         Room room = helpService.findLastRoomWithoutCashing(chatId);
         List<Question> questions = room.getQuestions();
-        List<Viewer> viewers = room.getViewers();
+        List<User> users = room.getUsers();
 
-        StringBuilder statisticsMessage = new StringBuilder();
+
         for (Question question : questions) {
 
             //Получаем статистику по вопросу
@@ -57,8 +55,8 @@ public class SendStatisticCommand implements Command {
 
 
             //Отправляем статистику каждому гостю комнаты
-            for (Viewer viewer : viewers) {
-                telegramBot.SendPhoto(fileWithCloudWord, viewer.getChatId());
+            for (User user : users) {
+                telegramBot.SendPhoto(fileWithCloudWord, user.getChatId());
             }
         }
     }
