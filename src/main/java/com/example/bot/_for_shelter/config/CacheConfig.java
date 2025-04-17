@@ -17,8 +17,8 @@ public class CacheConfig {
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("entrance-the-room", "rooms");
         cacheManager.setCaffeine(Caffeine.newBuilder()
-                .maximumSize(100) // Максимальное число записей в кеше
-                .expireAfterWrite(10, TimeUnit.MINUTES) // Время жизни записей
+                .maximumSize(200) // Максимальное число записей в кеше
+                .expireAfterWrite(60, TimeUnit.MINUTES) // Время жизни записей
                 .recordStats()); // Включаем статистику кеша
         return cacheManager;
     }

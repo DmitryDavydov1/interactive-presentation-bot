@@ -30,7 +30,7 @@ public class DeleteQuestionCommand implements Command {
         String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
 
         // Проверка на наличие активной комнаты с возможностью редактирования вопросов
-        Room room = helpService.findLastRoom(chatId);
+        Room room = helpService.findLastRoomWithoutCashing(chatId);
         if (room == null || !room.isQuestionStatus()) {
             sendErrorMessage(update, "Редактирование вопросов завершено или комната не найдена.");
             return;

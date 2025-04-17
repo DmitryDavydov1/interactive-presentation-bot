@@ -47,7 +47,7 @@ public class EditQuestionStatusCommand implements Command {
         String chatId = String.valueOf(update.getCallbackQuery().getFrom().getId());
         Integer updateMessageId = update.getCallbackQuery().getMessage().getMessageId();
 
-        Room room = helpService.findLastRoom(chatId);
+        Room room = helpService.findLastRoomWithoutCashing(chatId);
         if (room == null || !room.isQuestionStatus()) {
             sendBotMessageWithText(update, "Вы уже завершили редактирование комнаты.");
             return;
