@@ -98,14 +98,7 @@ public class CustomWordCloud {
         // Адаптация параметров
         double spiralStep = BASE_SPIRAL_STEP;
         double spiralAngleStep = BASE_SPIRAL_ANGLE_STEP;
-        if (wordCount <= 7) {
-            for (Word word : words) {
-                word.fontSize = Math.min((int) (word.fontSize * FONT_INCREASE_FACTOR), MAX_FONT_SIZE);
-            }
-            spiralStep *= 1.5;
-            spiralAngleStep *= 1.2;
-            System.out.println("Мало слов (" + wordCount + "): увеличены шрифты и шаг спирали до " + spiralStep);
-        } else if (wordCount > 50) {
+        if (wordCount > 50) {
             spiralStep *= 0.3;
             spiralAngleStep *= 0.3;
             System.out.println("Много слов (" + wordCount + "): уменьшен шаг спирали до " + spiralStep);
