@@ -32,7 +32,7 @@ public class SetPasswordOnRoomCommand implements Command {
 
     @Override
     @Transactional
-    public void execute(Update update) {
+    public void execute(Update  update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
         Room room = helpService.findLastRoom(chatId);
 

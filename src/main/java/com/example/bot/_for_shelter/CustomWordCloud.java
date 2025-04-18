@@ -3,7 +3,7 @@ package com.example.bot._for_shelter;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -54,7 +54,7 @@ public class CustomWordCloud {
         }
     }
 
-    public File generateAndSendWordCloud(Map<String, Integer> wordFreq) throws IOException, TelegramApiException {
+    public ByteArrayOutputStream generateAndSendWordCloud(Map<String, Integer> wordFreq) throws IOException, TelegramApiException {
         // Проверка входного словаря
         if (wordFreq == null || wordFreq.isEmpty()) {
             System.err.println("Словарь пуст или равен null!");
@@ -98,7 +98,14 @@ public class CustomWordCloud {
         // Адаптация параметров
         double spiralStep = BASE_SPIRAL_STEP;
         double spiralAngleStep = BASE_SPIRAL_ANGLE_STEP;
-        if (wordCount > 50) {
+        if (wordCount <= 7) {
+            for (Word word : words) {
+                word.fontSize = Math.min((int) (word.fontSize * FONT_INCREASE_FACTOR), MAX_FONT_SIZE);
+            }
+            spiralStep *= 1.5;
+            spiralAngleStep *= 1.2;
+            System.out.println("Мало слов (" + wordCount + "): увеличены шрифты и шаг спирали до " + spiralStep);
+        } else if (wordCount > 50) {
             spiralStep *= 0.3;
             spiralAngleStep *= 0.3;
             System.out.println("Много слов (" + wordCount + "): уменьшен шаг спирали до " + spiralStep);
@@ -244,17 +251,10 @@ public class CustomWordCloud {
 
         g2d.dispose();
 
-        // Сохраняем изображение
-        File outputFile = new File("custom_wordcloud_aesthetic.png");
-        try {
-            ImageIO.write(image, "png", outputFile);
-            System.out.println("Облако слов сохранено в custom_wordcloud_aesthetic.png");
-        } catch (IOException e) {
-            System.err.println("Ошибка при сохранении изображения: " + e.getMessage());
-            return outputFile;
-        }
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        return baos;
 
-        return outputFile;
     }
 }

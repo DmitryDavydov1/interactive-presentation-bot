@@ -89,10 +89,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         return sentMessage.getMessageId();
     }
 
-    public void SendPhoto(File file, String chatId) {
+    public void sendPhoto(InputFile file, String chatId) {
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(chatId);
-        sendPhoto.setPhoto(new InputFile(file));
+        sendPhoto.setPhoto(file);
         try {
             execute(sendPhoto);
             System.out.println("Изображение отправлено в Telegram!");

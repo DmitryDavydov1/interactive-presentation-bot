@@ -11,9 +11,12 @@ import com.example.bot._for_shelter.service.TelegramBot;
 import jakarta.transaction.Transactional;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -46,17 +49,18 @@ public class SendStatisticCommand implements Command {
 
             //Получаем статистику по вопросу
             Map<String, Integer> statistic = question.getStatistic();
-            File fileWithCloudWord;
+            ByteArrayOutputStream fileWithCloudWord;
+
             try {
                 fileWithCloudWord = customWordCloud.generateAndSendWordCloud(statistic);
             } catch (IOException | TelegramApiException e) {
                 throw new RuntimeException(e);
             }
 
-
+            InputFile inputFile = new InputFile(new ByteArrayInputStream(fileWithCloudWord.toByteArray()), "cloud.png");
             //Отправляем статистику каждому гостю комнаты
             for (User user : users) {
-                telegramBot.SendPhoto(fileWithCloudWord, user.getChatId());
+                telegramBot.sendPhoto(inputFile, user.getChatId());
             }
         }
     }
