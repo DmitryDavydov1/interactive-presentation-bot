@@ -22,36 +22,19 @@ public class HelpService {
         this.userRepository = userRepository;
     }
 
+    public Room findLastRoomWithoutCashing(String chatId) {
+        User user = userRepository.findByChatId(chatId).orElse(null);
+        assert user != null;
+        return roomRepository.findRoomsByCreatorId(user.getId());
+    }
+
+
 
     @Cacheable(value = "rooms", key = "#chatId")
     public Room findLastRoom(String chatId) {
-        User creatorTheRoom = userRepository.findByChatId(chatId).orElse(null);
-        List<Room> rooms = creatorTheRoom.getRoom();
-
-
-        System.out.printf("%d rooms found\n", rooms.size());
-        return rooms.stream()
-                .filter(Room::isStatus) // Фильтруем по статусу
-                .findFirst().orElse(null);
-    }
-
-
-    public Room findLastRoomWithoutCashing(String chatId) {
-        User creatorTheRoom = userRepository.findByChatId(chatId).orElse(null);
-        assert creatorTheRoom != null;
-        List<Room> rooms = creatorTheRoom.getRoom();
-
-        System.out.printf("%d rooms found\n", rooms.size());
-        return rooms.stream()
-                .filter(Room::isStatus) // Фильтруем по статусу
-                .findFirst().orElse(null);
-    }
-
-
-    @Cacheable(value = "entrance-the-room", key = "#id", unless = "#result == null")
-    public Room findRoomByIdForEntry(long id) {
-        System.out.println("Fetching room from DB: " + id);
-        return roomRepository.findByIdForEntry(id).orElse(null);
+        User user = userRepository.findByChatId(chatId).orElse(null);
+        assert user != null;
+        return roomRepository.findRoomsByCreatorId(user.getId());
     }
 
 
@@ -70,6 +53,13 @@ public class HelpService {
     }
 
 
+    @Cacheable(value = "entrance-the-room", key = "#id", unless = "#result == null")
+    public Room findRoomByIdForEntry(long id) {
+        System.out.println("Fetching room from DB: " + id);
+        return roomRepository.findByIdForEntry(id).orElse(null);
+    }
+
+
     private int makeRandomNumber() {
         Random random = new Random();
         int randomNumber = random.nextInt(1000) + 1;
@@ -78,5 +68,6 @@ public class HelpService {
         }
         return randomNumber;
     }
+
 
 }

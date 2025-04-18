@@ -11,7 +11,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(indexes = {
-        @Index(name = "idx_room_creator", columnList = "creatorRoom_id"),
+        @Index(name = "idx_room_creator", columnList = "creatorRoom_id, status"),
         @Index(name = "idx_room_idForEntry", columnList = "idForEntry", unique = true)
 })
 public class Room {
