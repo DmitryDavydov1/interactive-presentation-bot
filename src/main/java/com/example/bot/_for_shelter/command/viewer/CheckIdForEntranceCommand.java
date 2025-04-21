@@ -5,6 +5,7 @@ import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
+import com.example.bot._for_shelter.repository.UserRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,11 +19,13 @@ public class CheckIdForEntranceCommand implements Command {
     private final ConditionRepository conditionRepository;
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
+    private final UserRepository userRepository;
 
-    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, HelpService helpService) {
+    public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, HelpService helpService, UserRepository userRepository) {
         this.conditionRepository = conditionRepository;
         this.sendBotMessage = sendBotMessage;
         this.helpService = helpService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -30,8 +33,19 @@ public class CheckIdForEntranceCommand implements Command {
         String chatId = String.valueOf(update.getMessage().getChatId());
         long roomId = Long.parseLong(update.getMessage().getText());
 
+
+        boolean alreadyInRoom = userRepository.existsUserInRoom(roomId, chatId);
+        if (alreadyInRoom) {
+            SendMessage msg = sendBotMessage.createMessage(update,
+                    "Вы уже находитесь в этой комнате.");
+            sendBotMessage.sendMessage(msg);
+            return;
+        }
+
+
         Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);
         Room room = helpService.findRoomByIdForEntry(roomId);
+
 
         sendMessage(update, conditionOpt.orElse(null), room);
     }

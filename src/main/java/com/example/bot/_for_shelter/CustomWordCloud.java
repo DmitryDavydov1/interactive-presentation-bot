@@ -28,16 +28,16 @@ public class CustomWordCloud {
 
 
     private static final Color[] COLOR_PALETTE = {
-            new Color(74, 144, 226),
-            new Color(255, 107, 107),
-            new Color(80, 200, 120),
-            new Color(175, 122, 197),
-            new Color(255, 159, 67),
-            new Color(72, 201, 176),
-            new Color(247, 202, 201),
-            new Color(244, 208, 63),
-            new Color(26, 188, 156),
-            new Color(142, 68, 173)
+            new Color(0, 128, 255),    // Яркий синий (как "VISUALIZATION")
+            new Color(255, 77, 77),    // Яркий красный (как "illustrate")
+            new Color(0, 179, 136),    // Зеленый (как "interesting")
+            new Color(153, 102, 204),  // Фиолетовый (как "easy")
+            new Color(255, 147, 0),    // Оранжевый (как "attractive")
+            new Color(255, 102, 153),  // Розовый (как "audience")
+            new Color(0, 204, 204),    // Голубой (как "patterns")
+            new Color(51, 51, 153),    // Темно-синий (как "powerful")
+            new Color(255, 204, 0),    // Желтый (дополнительный для разнообразия)
+            new Color(102, 204, 102)   // Светло-зеленый (дополнительный для разнообразия)
     };
 
 
@@ -84,7 +84,7 @@ public class CustomWordCloud {
         int wordCount = wordFreq.size();
         for (Map.Entry<String, Integer> entry : wordFreq.entrySet()) {
             String wordText = entry.getKey().toLowerCase();
-            if (wordText.length() >= 3) { // Игнорируем короткие слова
+            if (!wordText.isEmpty()) { // Игнорируем короткие слова
                 Word word = new Word(wordText, entry.getValue());
                 word.fontSize = MIN_FONT_SIZE + (int) ((double) entry.getValue() / maxFreq * (MAX_FONT_SIZE - MIN_FONT_SIZE));
                 words.add(word);
@@ -98,14 +98,7 @@ public class CustomWordCloud {
         // Адаптация параметров
         double spiralStep = BASE_SPIRAL_STEP;
         double spiralAngleStep = BASE_SPIRAL_ANGLE_STEP;
-        if (wordCount <= 7) {
-            for (Word word : words) {
-                word.fontSize = Math.min((int) (word.fontSize * FONT_INCREASE_FACTOR), MAX_FONT_SIZE);
-            }
-            spiralStep *= 1.5;
-            spiralAngleStep *= 1.2;
-            System.out.println("Мало слов (" + wordCount + "): увеличены шрифты и шаг спирали до " + spiralStep);
-        } else if (wordCount > 50) {
+        if (wordCount > 50) {
             spiralStep *= 0.3;
             spiralAngleStep *= 0.3;
             System.out.println("Много слов (" + wordCount + "): уменьшен шаг спирали до " + spiralStep);
