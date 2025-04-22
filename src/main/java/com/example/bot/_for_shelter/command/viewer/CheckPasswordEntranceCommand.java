@@ -9,6 +9,7 @@ import com.example.bot._for_shelter.models.User;
 import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.repository.UserRepository;
+import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -23,13 +24,15 @@ public class CheckPasswordEntranceCommand implements Command {
     private final ConditionRepository conditionRepository;
     private final SendBotMessage sendBotMessage;
     private final UserRepository userRepository;
+    private final HelpService helpService;
 
     public CheckPasswordEntranceCommand(RoomRepository roomRepository, ConditionRepository conditionRepository,
-                                        SendBotMessage sendBotMessage, UserRepository userRepository) {
+                                        SendBotMessage sendBotMessage, UserRepository userRepository, HelpService helpService) {
         this.roomRepository = roomRepository;
         this.conditionRepository = conditionRepository;
         this.sendBotMessage = sendBotMessage;
         this.userRepository = userRepository;
+        this.helpService = helpService;
     }
 
     @Override
@@ -75,7 +78,7 @@ public class CheckPasswordEntranceCommand implements Command {
     }
 
     private void startQuestionnaire(Update update, Room room, Condition condition) {
-        List<Question> questions = room.getQuestions();
+        List<Question> questions = helpService.getQuestionsByRoom(room);
         if (questions.isEmpty()) {
             sendBotMessage.sendMessage(sendBotMessage.createMessage(update, "В этой комнате нет вопросов."));
             return;

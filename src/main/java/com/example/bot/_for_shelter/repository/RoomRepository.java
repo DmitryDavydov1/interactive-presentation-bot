@@ -15,4 +15,5 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
 
     @Query("SELECT r FROM Room r WHERE r.creatorRoom.id = :creatorRoomId AND r.status = true")
     Room findRoomsByCreatorId(@Param("creatorRoomId") Long creatorRoomId);
+
 }

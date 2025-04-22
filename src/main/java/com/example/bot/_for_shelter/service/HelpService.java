@@ -1,5 +1,6 @@
 package com.example.bot._for_shelter.service;
 
+import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.models.User;
 import com.example.bot._for_shelter.repository.RoomRepository;
@@ -27,7 +28,6 @@ public class HelpService {
         assert user != null;
         return roomRepository.findRoomsByCreatorId(user.getId());
     }
-
 
 
     @Cacheable(value = "rooms", key = "#chatId")
@@ -68,6 +68,13 @@ public class HelpService {
         }
         return randomNumber;
     }
+
+    @Cacheable(value = "questions", key = "#room.id")
+    public List<Question> getQuestionsByRoom(Room room) {
+        return room.getQuestions();
+    }
+
+
 
 
 }

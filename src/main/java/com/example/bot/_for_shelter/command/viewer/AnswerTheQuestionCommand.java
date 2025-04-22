@@ -4,6 +4,7 @@ import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.*;
 import com.example.bot._for_shelter.repository.*;
+import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -21,15 +22,17 @@ public class AnswerTheQuestionCommand implements Command {
     private final RoomRepository roomRepository;
     private final SendBotMessage sendBotMessage;
     private final UserRepository userRepository;
+    private final HelpService helpService;
 
     public AnswerTheQuestionCommand(AnswerRepository answerRepository, ConditionRepository conditionRepository,
                                     RoomRepository roomRepository,
-                                    SendBotMessage sendBotMessage, UserRepository userRepository) {
+                                    SendBotMessage sendBotMessage, UserRepository userRepository, HelpService helpService) {
         this.answerRepository = answerRepository;
         this.conditionRepository = conditionRepository;
         this.roomRepository = roomRepository;
         this.sendBotMessage = sendBotMessage;
         this.userRepository = userRepository;
+        this.helpService = helpService;
     }
 
     @Override
@@ -53,7 +56,7 @@ public class AnswerTheQuestionCommand implements Command {
             return;
         }
 
-        List<Question> questions = roomOpt.get().getQuestions();
+        List<Question> questions = helpService.getQuestionsByRoom(roomOpt.get());
         int currentQuestionIndex = Integer.parseInt(conditionParts[4]);
 
         // Сохранение ответа

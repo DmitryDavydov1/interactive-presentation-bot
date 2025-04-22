@@ -12,6 +12,8 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -55,7 +57,7 @@ public class CreateQuestionCommand implements Command {
         // Получаем комнату с активным статусом
         Optional<Room> roomWithStatusTrue = Optional.ofNullable(helpService.findLastRoom(chatId));
 
-        if (!roomWithStatusTrue.isPresent()) {
+        if (roomWithStatusTrue.isEmpty()) {
             // Возвращаем ошибку, если комната не найдена
             SendMessage sendMessage = sendBotMessage.sendMessageForAll(chatId, "Не найдена активная комната.");
             sendBotMessage.sendMessage(sendMessage);
@@ -77,7 +79,8 @@ public class CreateQuestionCommand implements Command {
         return update.startsWith("Добавляю запросы");
     }
 
-    private Question createQuestion(Update update, Room room) {
+    @CacheEvict(value = "question", key = "#room.id")
+    public Question createQuestion(Update update, Room room) {
         Question question = new Question();
         question.setRoom(room);
         question.setText(update.getMessage().getText());

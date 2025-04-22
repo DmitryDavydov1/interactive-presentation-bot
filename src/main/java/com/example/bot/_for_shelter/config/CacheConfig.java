@@ -15,7 +15,7 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("entrance-the-room", "rooms");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("entrance-the-room", "rooms", "questions");
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(200) // Максимальное число записей в кеше
                 .expireAfterWrite(60, TimeUnit.MINUTES) // Время жизни записей
