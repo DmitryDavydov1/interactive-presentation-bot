@@ -2,11 +2,14 @@ package com.example.bot._for_shelter.command.viewer;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.command.room.SendStatisticCommand;
 import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.UserRepository;
 import com.example.bot._for_shelter.service.HelpService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -20,6 +23,7 @@ public class CheckIdForEntranceCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
     private final UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CheckIdForEntranceCommand.class);
 
     public CheckIdForEntranceCommand(ConditionRepository conditionRepository, SendBotMessage sendBotMessage, HelpService helpService, UserRepository userRepository) {
         this.conditionRepository = conditionRepository;
@@ -31,7 +35,16 @@ public class CheckIdForEntranceCommand implements Command {
     @Override
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
-        long roomId = Long.parseLong(update.getMessage().getText());
+        long roomId;
+        try {
+            roomId = Long.parseLong(update.getMessage().getText());
+        } catch (NumberFormatException e) {
+            SendMessage msg = sendBotMessage.createMessage(update,
+                    "iD должен быть из цифр");
+            sendBotMessage.sendMessage(msg);
+            logger.warn("Введен текстовый id для комнаты, chatId юзера: {}", chatId);
+            return;
+        }
 
 
         boolean alreadyInRoom = userRepository.existsUserInRoom(roomId, chatId);

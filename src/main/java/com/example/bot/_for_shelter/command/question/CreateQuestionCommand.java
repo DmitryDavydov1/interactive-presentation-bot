@@ -2,12 +2,15 @@ package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.command.room.CreateRoomCommand;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,6 +27,8 @@ public class CreateQuestionCommand implements Command {
     private final QuestionRepository questionRepository;
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
+    private static final Logger logger = LoggerFactory.getLogger(CreateQuestionCommand.class);
+
 
     @Autowired
     public CreateQuestionCommand(HelpService helpService, QuestionRepository questionRepository, MarkUps markUps,
@@ -38,6 +43,14 @@ public class CreateQuestionCommand implements Command {
     @Transactional
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
+        int length = update.getMessage().getText().length();
+        if (length > 100) {
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Твой вопрос слишком длинный");
+            sendBotMessage.sendMessage(sendMessage);
+
+            logger.warn("Слишком длинный вопрос от юзера: {}, длинною: {}", chatId, length);
+            return;
+        }
 
         // Получаем комнату с активным статусом
         Optional<Room> roomWithStatusTrue = Optional.ofNullable(helpService.findLastRoom(chatId));

@@ -10,6 +10,8 @@ import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.repository.UserRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -23,6 +25,7 @@ public class CreateRoomCommand implements Command {
     private final HelpService helpService;
     private final ConditionRepository conditionRepository;
     private final UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CreateRoomCommand.class);
 
     public CreateRoomCommand(SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository, UserRepository userRepository) {
         this.sendBotMessage = sendBotMessage;
@@ -35,6 +38,8 @@ public class CreateRoomCommand implements Command {
     @Override
     @Transactional
     public void execute(Update update) {
+
+
         String chatId = getChatId(update);
 
 
@@ -48,6 +53,7 @@ public class CreateRoomCommand implements Command {
             roomRepository.save(roomWithStatusTrue);
         } else {
             Room updateRoom = helpService.updateRoom(user);
+
             updateCondition(chatId);
             sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
             return;
@@ -56,9 +62,11 @@ public class CreateRoomCommand implements Command {
         // Обновление или создание новой комнаты
         if (user != null) {
             Room updateRoom = helpService.updateRoom(user);
+            logger.info("Создана новая комната, ждем пароль");
             updateCondition(chatId);
             sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
         }
+
     }
 
     @Override

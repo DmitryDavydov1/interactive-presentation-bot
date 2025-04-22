@@ -9,6 +9,9 @@ import java.util.*;
 import java.util.List;
 
 
+import com.example.bot._for_shelter.command.room.SendStatisticCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -25,7 +28,7 @@ public class CustomWordCloud {
     private static final double FONT_INCREASE_FACTOR = 2.0;
     private static final double PULL_FACTOR = 0.3;
     private static final int PADDING = 2;
-
+    private static final Logger logger = LoggerFactory.getLogger(CustomWordCloud.class);
 
     private static final Color[] COLOR_PALETTE = {
             new Color(0, 128, 255),    // Яркий синий (как "VISUALIZATION")
@@ -54,7 +57,7 @@ public class CustomWordCloud {
         }
     }
 
-    public ByteArrayOutputStream generateAndSendWordCloud(Map<String, Integer> wordFreq) throws IOException, TelegramApiException {
+    public ByteArrayOutputStream generateAndSendWordCloud(Map<String, Integer> wordFreq) throws IOException {
         // Проверка входного словаря
         if (wordFreq == null || wordFreq.isEmpty()) {
             System.err.println("Словарь пуст или равен null!");
@@ -67,17 +70,11 @@ public class CustomWordCloud {
         double averageFreq = totalWords / (double) uniqueWords;
         int maxFreq = wordFreq.values().stream().max(Integer::compare).orElse(1);
         int minFreq = wordFreq.values().stream().min(Integer::compare).orElse(0);
-        System.out.println("Статистика слов:");
-        System.out.println("Общее количество слов (с учётом частот): " + totalWords);
-        System.out.println("Количество уникальных слов: " + uniqueWords);
-        System.out.println("Средняя частота слова: " + String.format("%.2f", averageFreq));
-        System.out.println("Максимальная частота: " + maxFreq);
-        System.out.println("Минимальная частота: " + minFreq);
-        System.out.println("Топ-5 слов по частоте:");
-        wordFreq.entrySet().stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                .limit(5)
-                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
+
+//        wordFreq.entrySet().stream()
+//                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+//                .limit(5)
+//                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
 
         // Преобразуем в список слов
         List<Word> words = new ArrayList<>();
@@ -244,9 +241,16 @@ public class CustomWordCloud {
 
         g2d.dispose();
 
+        logger.info("Облако слов генерируется");
+        logger.info("Общее количество слов (с учётом частот): {}", totalWords);
+        logger.info("Количество уникальных слов: {}", uniqueWords);
+        logger.info("Средняя частота слова: {}", String.format("%.2f", averageFreq));
+        logger.info("Максимальная частота: {}", maxFreq);
+        logger.info("Минимальная частота: {}", minFreq);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "png", baos);
+        logger.info("Облако слов успешно сгенерировано");
         return baos;
 
     }

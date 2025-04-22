@@ -31,9 +31,10 @@ public class Question {
     public Map<String, Integer> getStatistic() {
         Map<String, Integer> wordCount = new HashMap<>();
 
-
         for (Answer answer : answers) {
-            wordCount.put(answer.getAnswer(), wordCount.getOrDefault(answer.getAnswer(), 0) + 1);
+            // Преобразуем ответ в нижний регистр, чтобы игнорировать регистр
+            String normalizedAnswer = answer.getAnswer().toLowerCase().trim(); // Удаляет пробелы в начале и конце
+            wordCount.put(normalizedAnswer, wordCount.getOrDefault(normalizedAnswer, 0) + 1);
         }
 
         System.out.println(wordCount);
