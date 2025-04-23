@@ -28,7 +28,7 @@ public class CreateRoomCreatorCommand implements Command {
 
 
         //Формируем сообщения для него
-        InlineKeyboardMarkup creatorRoomMenu = markUps.creatorRoomMenu();
+        InlineKeyboardMarkup creatorRoomMenu = markUps.menuForCreateRoom();
         SendMessage msg = new SendMessage();
         msg.setChatId(chatId);
         msg.setReplyMarkup(creatorRoomMenu);

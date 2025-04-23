@@ -47,7 +47,7 @@ public class CreateViewerCommand implements Command {
 
     private void processViewer(Update update, String chatId, String userName) {
         // Генерация клавиатуры
-        InlineKeyboardMarkup markUp = markUps.menuForViewer();
+        InlineKeyboardMarkup markUp = markUps.menuForEntranceTheRoom();
         SendMessage sendMessage = sendBotMessage.createMessageWithKeyboardMarkUpWithCallbackUpdate(update, "Выберите команду", markUp);
 
         // Проверка существования зрителя

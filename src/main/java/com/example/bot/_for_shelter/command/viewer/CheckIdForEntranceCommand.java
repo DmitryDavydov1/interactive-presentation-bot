@@ -46,8 +46,8 @@ public class CheckIdForEntranceCommand implements Command {
             return;
         }
 
-
-        boolean alreadyInRoom = userRepository.existsUserInRoom(roomId, chatId);
+        Room room = helpService.findRoomByIdForEntry(roomId);
+        boolean alreadyInRoom = userRepository.existsUserInRoom(room.getId(), chatId);
         if (alreadyInRoom) {
             SendMessage msg = sendBotMessage.createMessage(update,
                     "Вы уже находитесь в этой комнате.");
@@ -57,9 +57,6 @@ public class CheckIdForEntranceCommand implements Command {
 
 
         Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);
-        Room room = helpService.findRoomByIdForEntry(roomId);
-
-
         sendMessage(update, conditionOpt.orElse(null), room);
     }
 

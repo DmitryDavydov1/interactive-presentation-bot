@@ -14,14 +14,14 @@ import java.util.List;
 public class MarkUps {
 
 
-    public InlineKeyboardMarkup startButton() {
+    public InlineKeyboardMarkup startMenuButton() {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
 
 
         var spickerButton = new InlineKeyboardButton();
-        String dogButtonText = EmojiParser.parseToUnicode("Я спикер" + " :dog:");
+        String dogButtonText = EmojiParser.parseToUnicode("Я спикер");
 
 
         spickerButton.setText(dogButtonText);
@@ -41,7 +41,7 @@ public class MarkUps {
         return markupInLine;
     }
 
-    public InlineKeyboardMarkup creatorRoomMenu() {
+    public InlineKeyboardMarkup menuForCreateRoom() {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine = new ArrayList<>();
@@ -100,7 +100,8 @@ public class MarkUps {
         return markupInLine;
     }
 
-    public InlineKeyboardMarkup menuForViewer() {
+
+    public InlineKeyboardMarkup menuForEntranceTheRoom() {
         InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
         List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
@@ -112,23 +113,6 @@ public class MarkUps {
 
 
         rowInLine1.add(entranceRoom);
-        rowsInLine.add(rowInLine1);
-        markupInLine.setKeyboard(rowsInLine);
-        return markupInLine;
-    }
-
-
-    public InlineKeyboardMarkup menuForViewerWithRoom() {
-        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
-        List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
-
-        var answerQuestions = new InlineKeyboardButton();
-        String entranceRoomText = EmojiParser.parseToUnicode("Отвечать на вопросы :question: ");
-        answerQuestions.setText(entranceRoomText);
-        answerQuestions.setCallbackData("отвечать на вопросы");
-
-        rowInLine1.add(answerQuestions);
         rowsInLine.add(rowInLine1);
         markupInLine.setKeyboard(rowsInLine);
         return markupInLine;
@@ -156,12 +140,12 @@ public class MarkUps {
         forbidResponding.setCallbackData("Запрещаю отвечать " + roomId);
 
         var sendStatistics = new InlineKeyboardButton();
-        String sendStatisticsText = EmojiParser.parseToUnicode("Отправить статистику");
+        String sendStatisticsText = EmojiParser.parseToUnicode("Отправить облако слов");
         sendStatistics.setText(sendStatisticsText);
         sendStatistics.setCallbackData("Отправить статистику");
 
         var viewStatistics = new InlineKeyboardButton();
-        String viewStatisticsText = EmojiParser.parseToUnicode("Посмотреть статистику");
+        String viewStatisticsText = EmojiParser.parseToUnicode("Посмотреть количество отвечающих");
         viewStatistics.setText(viewStatisticsText);
         viewStatistics.setCallbackData("Посмотреть статистику");
 

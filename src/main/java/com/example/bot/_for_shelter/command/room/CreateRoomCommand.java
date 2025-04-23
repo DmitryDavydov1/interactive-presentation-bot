@@ -36,7 +36,6 @@ public class CreateRoomCommand implements Command {
     }
 
     @Override
-    @Transactional
     public void execute(Update update) {
 
 
