@@ -2,11 +2,15 @@ package com.example.bot._for_shelter.command.viewer;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.command.room.SendStatisticCommand;
 import com.example.bot._for_shelter.models.*;
 import com.example.bot._for_shelter.repository.*;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.List;
@@ -23,6 +27,8 @@ public class AnswerTheQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final UserRepository userRepository;
     private final HelpService helpService;
+    private static final Logger logger = LoggerFactory.getLogger(AnswerTheQuestionCommand.class);
+
 
     public AnswerTheQuestionCommand(AnswerRepository answerRepository, ConditionRepository conditionRepository,
                                     RoomRepository roomRepository,
@@ -40,6 +46,17 @@ public class AnswerTheQuestionCommand implements Command {
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
         String answerText = update.getMessage().getText();
+
+
+        int length = answerText.length();
+        if (length > 20) {
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Твой ответ слишком длинный");
+            sendBotMessage.sendMessage(sendMessage);
+
+            logger.warn("Слишком длинный ответ от юзера: {}, длинною: {}", chatId, length);
+            return;
+        }
+
 
         // Получение текущего состояния из базы
         Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);

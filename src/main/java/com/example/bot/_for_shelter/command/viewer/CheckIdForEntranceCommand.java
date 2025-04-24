@@ -35,14 +35,20 @@ public class CheckIdForEntranceCommand implements Command {
     @Override
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
-        long roomId;
+        long roomId = 0;
         try {
             roomId = Long.parseLong(update.getMessage().getText());
+            if (roomId > 1000000) {
+                logger.warn("Введен  id больше 1000000, Id комнаты: {}", roomId);
+                SendMessage sendMessage = sendBotMessage.createMessage(update, "Неверный ID");
+                sendBotMessage.sendMessage(sendMessage);
+                return;
+            }
         } catch (NumberFormatException e) {
             SendMessage msg = sendBotMessage.createMessage(update,
                     "iD должен быть из цифр");
             sendBotMessage.sendMessage(msg);
-            logger.warn("Введен текстовый id для комнаты, chatId юзера: {}", chatId);
+            logger.warn("Введен текстовый id для комнаты, Id комнаты: {}", roomId);
             return;
         }
 
@@ -71,6 +77,8 @@ public class CheckIdForEntranceCommand implements Command {
         if (room != null) {
             condition.setCondition("вводит пароль " + room.getId());
             conditionRepository.save(condition);
+        } else {
+            logger.warn("Введен неправильный ID {}", update.getMessage().getChatId());
         }
 
         sendBotMessage.sendMessage(msg);

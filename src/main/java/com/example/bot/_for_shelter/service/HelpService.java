@@ -62,9 +62,9 @@ public class HelpService {
 
     private int makeRandomNumber() {
         Random random = new Random();
-        int randomNumber = random.nextInt(1000) + 1;
+        int randomNumber = random.nextInt(1000000) + 1;
         while (roomRepository.existsByIdForEntry(randomNumber)) {
-            randomNumber = random.nextInt(1000) + 1;
+            randomNumber = random.nextInt(1000000) + 1;
         }
         return randomNumber;
     }

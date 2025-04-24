@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -31,13 +32,15 @@ public class SendStatisticCommand implements Command {
     private final CustomWordCloud customWordCloud;
     private final TelegramBot telegramBot;
     private static final Logger logger = LoggerFactory.getLogger(SendStatisticCommand.class);
+    private final SendBotMessage sendBotMessage;
 
 
     @Lazy
-    public SendStatisticCommand(HelpService helpService, CustomWordCloud customWordCloud, TelegramBot telegramBot) {
+    public SendStatisticCommand(HelpService helpService, CustomWordCloud customWordCloud, TelegramBot telegramBot, SendBotMessage sendBotMessage) {
         this.helpService = helpService;
         this.customWordCloud = customWordCloud;
         this.telegramBot = telegramBot;
+        this.sendBotMessage = sendBotMessage;
     }
 
     @Override
@@ -55,7 +58,9 @@ public class SendStatisticCommand implements Command {
             //Получаем статистику по вопросу
             Map<String, Integer> statistic = question.getStatistic();
             if (statistic.isEmpty()) {
-                logger.warn("На вопрос ноль ответов");
+                SendMessage sendMessage = sendBotMessage.createMessage(update, "На вопрос номер " + (questions.indexOf(question)+1) + " ноль ответов");
+                sendBotMessage.sendMessage(sendMessage);
+                logger.warn("На вопрос ноль ответов, комната {}", room.getId());
                 return;
             }
 
@@ -79,6 +84,8 @@ public class SendStatisticCommand implements Command {
             //Отправляем статистику создателю комнаты
             telegramBot.sendPhoto(inputFile, chatId);
         }
+
+        logger.info("Успешно сгенерированы все изображения для комнаты: {}", room.getId());
     }
 
     @Override

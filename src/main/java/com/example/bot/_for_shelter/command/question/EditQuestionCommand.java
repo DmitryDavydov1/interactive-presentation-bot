@@ -2,6 +2,7 @@ package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.command.room.SendStatisticCommand;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Question;
@@ -9,13 +10,14 @@ import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.service.HelpService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
-import java.util.logging.Handler;
 
 @Component
 public class EditQuestionCommand implements Command {
@@ -25,6 +27,7 @@ public class EditQuestionCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final ConditionRepository conditionRepository;
     private final HelpService helpService;
+    private static final Logger logger = LoggerFactory.getLogger(EditQuestionCommand.class);
 
     public EditQuestionCommand(QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage,
                                ConditionRepository conditionRepository, HelpService helpService) {
@@ -38,6 +41,15 @@ public class EditQuestionCommand implements Command {
     @Override
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
+
+        int length = update.getMessage().getText().length();
+        if (length > 100) {
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Твой вопрос слишком длинный");
+            sendBotMessage.sendMessage(sendMessage);
+
+            logger.warn("Слишком длинный вопрос от юзера: {}, длинною: {}", chatId, length);
+            return;
+        }
         Room room = helpService.findLastRoom(chatId);
 
 

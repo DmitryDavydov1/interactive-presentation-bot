@@ -21,14 +21,14 @@ public class MarkUps {
 
 
         var spickerButton = new InlineKeyboardButton();
-        String dogButtonText = EmojiParser.parseToUnicode("Я спикер");
+        String dogButtonText = "Я спикер";
 
 
         spickerButton.setText(dogButtonText);
         spickerButton.setCallbackData("create-creator-command");
 
         var catButton = new InlineKeyboardButton();
-        String catButtonText = EmojiParser.parseToUnicode("Я слушатель " + " :cat:");
+        String catButtonText = "Я слушатель ";
         catButton.setText(catButtonText);
         catButton.setCallbackData("listener-button");
 
@@ -48,7 +48,7 @@ public class MarkUps {
 
 
         var createRoomButton = new InlineKeyboardButton();
-        String dogButtonText = EmojiParser.parseToUnicode("Cоздать комнату");
+        String dogButtonText = "Cоздать комнату";
 
 
         createRoomButton.setText(dogButtonText);
@@ -86,7 +86,7 @@ public class MarkUps {
 
 
         var endQuestion = new InlineKeyboardButton();
-        String endQuestionText = EmojiParser.parseToUnicode("Завершить добавление");
+        String endQuestionText = "Завершить добавление";
         endQuestion.setText(endQuestionText);
         endQuestion.setCallbackData("end-question" + questionId);
 
@@ -107,7 +107,7 @@ public class MarkUps {
         List<InlineKeyboardButton> rowInLine1 = new ArrayList<>();
 
         var entranceRoom = new InlineKeyboardButton();
-        String entranceRoomText = EmojiParser.parseToUnicode("Войти в комнату");
+        String entranceRoomText = "Войти в комнату";
         entranceRoom.setText(entranceRoomText);
         entranceRoom.setCallbackData("entrance-room");
 
@@ -129,23 +129,23 @@ public class MarkUps {
 
 
         var addQuestionAfterAddQuestion = new InlineKeyboardButton();
-        String addQuestionText = EmojiParser.parseToUnicode("Продолжить добавлять или редактировать вопросы");
+        String addQuestionText = "Продолжить добавлять или редактировать вопросы";
         addQuestionAfterAddQuestion.setText(addQuestionText);
         addQuestionAfterAddQuestion.setCallbackData("продолжать-add-question");
 
 
         var forbidResponding = new InlineKeyboardButton();
-        String forbidRespondingText = EmojiParser.parseToUnicode("Запретить отвечать");
+        String forbidRespondingText = "Запретить отвечать";
         forbidResponding.setText(forbidRespondingText);
         forbidResponding.setCallbackData("Запрещаю отвечать " + roomId);
 
         var sendStatistics = new InlineKeyboardButton();
-        String sendStatisticsText = EmojiParser.parseToUnicode("Отправить облако слов");
+        String sendStatisticsText = "Отправить облако слов";
         sendStatistics.setText(sendStatisticsText);
         sendStatistics.setCallbackData("Отправить статистику");
 
         var viewStatistics = new InlineKeyboardButton();
-        String viewStatisticsText = EmojiParser.parseToUnicode("Посмотреть количество отвечающих");
+        String viewStatisticsText = "Посмотреть количество отвечающих";
         viewStatistics.setText(viewStatisticsText);
         viewStatistics.setCallbackData("Посмотреть статистику");
 
