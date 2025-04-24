@@ -53,6 +53,13 @@ public class CheckIdForEntranceCommand implements Command {
         }
 
         Room room = helpService.findRoomByIdForEntry(roomId);
+        if (room == null) {
+            SendMessage msg = sendBotMessage.createMessage(update,
+                    "Неверный ID");
+            sendBotMessage.sendMessage(msg);
+            logger.warn("Введен неправильный ID {}", update.getMessage().getChatId());
+            return;
+        }
         boolean alreadyInRoom = userRepository.existsUserInRoom(room.getId(), chatId);
         if (alreadyInRoom) {
             SendMessage msg = sendBotMessage.createMessage(update,
@@ -77,8 +84,6 @@ public class CheckIdForEntranceCommand implements Command {
         if (room != null) {
             condition.setCondition("вводит пароль " + room.getId());
             conditionRepository.save(condition);
-        } else {
-            logger.warn("Введен неправильный ID {}", update.getMessage().getChatId());
         }
 
         sendBotMessage.sendMessage(msg);
