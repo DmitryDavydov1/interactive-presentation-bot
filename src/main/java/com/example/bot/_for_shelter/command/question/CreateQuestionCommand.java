@@ -2,7 +2,6 @@ package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
-import com.example.bot._for_shelter.command.room.CreateRoomCommand;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -29,7 +27,7 @@ public class CreateQuestionCommand implements Command {
     private final QuestionRepository questionRepository;
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
-    private static final Logger logger = LoggerFactory.getLogger(CreateQuestionCommand.class);
+    private static final Logger logger = LoggerFactory.getLogger(ContinueAddOrEditQuestion.class);
 
 
     @Autowired

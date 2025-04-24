@@ -71,8 +71,13 @@ public class SendStatisticCommand implements Command {
             InputFile inputFile = new InputFile(new ByteArrayInputStream(fileWithCloudWord.toByteArray()), "cloud.png");
             //Отправляем статистику каждому гостю комнаты
             for (User user : users) {
-                telegramBot.sendPhoto(inputFile, user.getChatId());
+                if (!user.getChatId().equals(chatId)) {
+                    telegramBot.sendPhoto(inputFile, user.getChatId());
+                }
             }
+
+            //Отправляем статистику создателю комнаты
+            telegramBot.sendPhoto(inputFile, chatId);
         }
     }
 

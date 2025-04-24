@@ -129,9 +129,9 @@ public class MarkUps {
 
 
         var addQuestionAfterAddQuestion = new InlineKeyboardButton();
-        String addQuestionText = EmojiParser.parseToUnicode("Добавить вопросы");
+        String addQuestionText = EmojiParser.parseToUnicode("Продолжить добавлять или редактировать вопросы");
         addQuestionAfterAddQuestion.setText(addQuestionText);
-        addQuestionAfterAddQuestion.setCallbackData("отвечать на вопросы");
+        addQuestionAfterAddQuestion.setCallbackData("продолжать-add-question");
 
 
         var forbidResponding = new InlineKeyboardButton();
