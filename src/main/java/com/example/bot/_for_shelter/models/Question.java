@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 @Entity
-@Getter
-@Setter
 @Table(indexes = {
         @Index(name = "idx_question_room", columnList = "room_id")
 })
@@ -20,6 +18,38 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String text;
+
+    public Room getRoom() {
+        return room;
+    }
+
+    public void setRoom(Room room) {
+        this.room = room;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<Answer> answers) {
+        this.answers = answers;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     @ManyToOne
     private Room room;

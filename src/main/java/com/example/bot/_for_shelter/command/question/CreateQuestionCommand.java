@@ -27,7 +27,7 @@ public class CreateQuestionCommand implements Command {
     private final QuestionRepository questionRepository;
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
-    private static final Logger logger = LoggerFactory.getLogger(ContinueAddOrEditQuestion.class);
+    private static final Logger logger = LoggerFactory.getLogger(CreateQuestionCommand.class);
 
 
     @Autowired
