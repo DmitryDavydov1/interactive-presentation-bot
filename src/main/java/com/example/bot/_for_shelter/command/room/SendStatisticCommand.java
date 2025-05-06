@@ -58,7 +58,7 @@ public class SendStatisticCommand implements Command {
             //Получаем статистику по вопросу
             Map<String, Integer> statistic = question.getStatistic();
             if (statistic.isEmpty()) {
-                SendMessage sendMessage = sendBotMessage.createMessage(update, "На вопрос номер " + (questions.indexOf(question)+1) + " ноль ответов");
+                SendMessage sendMessage = sendBotMessage.createMessage(update, "На вопрос номер " + (questions.indexOf(question) + 1) + " ноль ответов");
                 sendBotMessage.sendMessage(sendMessage);
                 logger.warn("На вопрос ноль ответов, комната {}", room.getId());
                 return;
@@ -72,20 +72,20 @@ public class SendStatisticCommand implements Command {
                 throw new RuntimeException(e);
             }
 
+            byte[] imageBytes = fileWithCloudWord.toByteArray();
 
-            InputFile inputFile = new InputFile(new ByteArrayInputStream(fileWithCloudWord.toByteArray()), "cloud.png");
-            //Отправляем статистику каждому гостю комнаты
             for (User user : users) {
                 if (!user.getChatId().equals(chatId)) {
-                    telegramBot.sendPhoto(inputFile, user.getChatId());
+                    InputFile freshInputFile = new InputFile(new ByteArrayInputStream(imageBytes), "cloud.png");
+                    telegramBot.sendPhoto(freshInputFile, user.getChatId());
                 }
             }
+            InputFile creatorInputFile = new InputFile(new ByteArrayInputStream(imageBytes), "cloud.png");
+            telegramBot.sendPhoto(creatorInputFile, chatId);
 
-            //Отправляем статистику создателю комнаты
-            telegramBot.sendPhoto(inputFile, chatId);
+
+            logger.info("Успешно сгенерированы все изображения для комнаты: {}", room.getId());
         }
-
-        logger.info("Успешно сгенерированы все изображения для комнаты: {}", room.getId());
     }
 
     @Override
@@ -94,3 +94,4 @@ public class SendStatisticCommand implements Command {
     }
 
 }
+

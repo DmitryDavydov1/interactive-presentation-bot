@@ -55,7 +55,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
-        if (update.hasCallbackQuery()) {
+            if (update.hasCallbackQuery()) {
             commandList.stream()
                     .filter(command -> command.isSupport(update.getCallbackQuery().getData()))
                     .forEach(command -> {
