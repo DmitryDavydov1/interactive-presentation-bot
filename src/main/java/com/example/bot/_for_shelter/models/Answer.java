@@ -9,8 +9,7 @@ import lombok.Setter;
 @Setter
 @Table(indexes = {
         @Index(name = "idx_answer_question", columnList = "question_id"),
-        @Index(name = "idx_answer_viewer_question", columnList = "user_id, question_id"),
-        @Index(name = "idx_answer_user", columnList = "user_id")
+        @Index(name = "idx_answer_viewer_question", columnList = "user_id, question_id")
 })
 public class Answer {
     @Id
