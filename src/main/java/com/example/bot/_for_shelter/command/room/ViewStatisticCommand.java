@@ -38,11 +38,11 @@ public class ViewStatisticCommand implements Command {
 
     private String generateStatistics(Room room) {
         List<Question> questions = room.getQuestions();
-        List<Viewer> viewers = room.getViewers();
+        List<User> users = room.getUsers();
         List<Long> questionIds = getQuestionIds(questions);
 
-        long completedCount = getViewerCountByCondition(viewers, questionIds, true);
-        long inProgressCount = getViewerCountByCondition(viewers, questionIds, false);
+        long completedCount = getViewerCountByCondition(users, questionIds, true);
+        long inProgressCount = getViewerCountByCondition(users, questionIds, false);
 
         return String.format("Ответили до конца: %d\nСейчас отвечает: %d", completedCount, inProgressCount);
     }
@@ -53,7 +53,7 @@ public class ViewStatisticCommand implements Command {
                 .toList();
     }
 
-    private long getViewerCountByCondition(List<Viewer> viewers, List<Long> questionIds, boolean isCompleted) {
+    private long getViewerCountByCondition(List<User> viewers, List<Long> questionIds, boolean isCompleted) {
         return viewers.stream()
                 .filter(viewer -> {
                     int replies = answerRepository.numberReplies(questionIds, viewer.getId());

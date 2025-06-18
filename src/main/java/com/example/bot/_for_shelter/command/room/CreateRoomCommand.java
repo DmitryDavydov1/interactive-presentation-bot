@@ -3,13 +3,15 @@ package com.example.bot._for_shelter.command.room;
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Condition;
-import com.example.bot._for_shelter.models.CreatorTheRoom;
 import com.example.bot._for_shelter.models.Room;
+import com.example.bot._for_shelter.models.User;
 import com.example.bot._for_shelter.repository.ConditionRepository;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
+import com.example.bot._for_shelter.repository.UserRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -17,39 +19,53 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Component
 public class CreateRoomCommand implements Command {
 
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
+
     private final SendBotMessage sendBotMessage;
     private final RoomRepository roomRepository;
     private final HelpService helpService;
     private final ConditionRepository conditionRepository;
+    private final UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CreateRoomCommand.class);
 
-    public CreateRoomCommand(CreatorTheRoomRepository creatorTheRoomRepository, SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository) {
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
+    public CreateRoomCommand(SendBotMessage sendBotMessage, RoomRepository roomRepository, HelpService helpService, ConditionRepository conditionRepository, UserRepository userRepository) {
         this.sendBotMessage = sendBotMessage;
         this.roomRepository = roomRepository;
         this.helpService = helpService;
         this.conditionRepository = conditionRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
-    @Transactional
     public void execute(Update update) {
+
+
         String chatId = getChatId(update);
+
+
+        User user = userRepository.findByChatId(chatId).orElse(null);
+
 
         // Проверка существующей комнаты
         Room roomWithStatusTrue = helpService.findLastRoom(chatId);
         if (roomWithStatusTrue != null) {
             roomWithStatusTrue.setStatus(false);
             roomRepository.save(roomWithStatusTrue);
+        } else {
+            Room updateRoom = helpService.updateRoom(user);
+
+            updateCondition(chatId);
+            sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
+            return;
         }
 
         // Обновление или создание новой комнаты
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        if (creatorTheRoom != null) {
-            Room updateRoom = helpService.updateRoom(creatorTheRoom);
+        if (user != null) {
+            Room updateRoom = helpService.updateRoom(user);
+            logger.info("Создана новая комната, ждем пароль");
             updateCondition(chatId);
             sendRoomCreatedMessage(update, updateRoom.getIdForEntry());
         }
+
     }
 
     @Override

@@ -6,6 +6,7 @@ import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.QuestionRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -38,7 +39,7 @@ public class DeleteQuestionCommand implements Command {
 
         // Извлечение ID вопроса и его удаление
         long questionId = Long.parseLong(parts[2]);
-        questionRepository.deleteById(questionId);
+        deleteQuestion(questionId, room);
 
         // Удаление сообщения
         Integer messageId = Integer.valueOf(parts[3]);
@@ -57,6 +58,11 @@ public class DeleteQuestionCommand implements Command {
         }
     }
 
+    @CacheEvict(value = "question", key = "#room.id")
+    public void deleteQuestion(long questionId, Room room) {
+        questionRepository.deleteById(questionId);
+    }
+
     // Метод для отправки сообщения об ошибке
     private void sendErrorMessage(Update update, String errorMessage) {
         SendMessage msg = sendBotMessage.createMessage(update, errorMessage);
@@ -65,7 +71,7 @@ public class DeleteQuestionCommand implements Command {
 
 
     // Метод для удаления сообщений
-    private void deleteMessages(Update update, Integer messageId) {
+    public void deleteMessages(Update update, Integer messageId) {
         sendBotMessage.deleteMessageWithMessageId(update, messageId);
         sendBotMessage.deleteMessage(update);
     }

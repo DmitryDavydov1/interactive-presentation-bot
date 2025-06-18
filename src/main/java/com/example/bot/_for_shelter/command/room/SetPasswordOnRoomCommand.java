@@ -8,6 +8,8 @@ import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.RoomRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -19,6 +21,7 @@ public class SetPasswordOnRoomCommand implements Command {
     private final SendBotMessage sendBotMessage;
     private final HelpService helpService;
     private final ConditionRepository conditionRepository;
+    private static final Logger logger = LoggerFactory.getLogger(SetPasswordOnRoomCommand.class);
 
     public SetPasswordOnRoomCommand(RoomRepository roomRepository,
                                     SendBotMessage sendBotMessage,
@@ -34,6 +37,14 @@ public class SetPasswordOnRoomCommand implements Command {
     @Transactional
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
+        int length = update.getMessage().getText().length();
+        if (length > 20) {
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Твой пароль слишком длинный");
+            sendBotMessage.sendMessage(sendMessage);
+            logger.warn("Слишком длинный пароль от юзера: {}, длинною: {}", chatId, length);
+            return;
+        }
+
         Room room = helpService.findLastRoom(chatId);
 
         room.setPassword(update.getMessage().getText());

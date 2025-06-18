@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface AnswerRepository extends JpaRepository<Answer, Long> {
-    @Query("SELECT COUNT(a) FROM Answer a WHERE a.question.id IN :questionIds AND a.viewer.id = :id")
+    @Query("SELECT COUNT(a) FROM Answer a WHERE a.question.id IN :questionIds AND a.user.id = :id")
     int numberReplies(@Param("questionIds") List<Long> questionIds, @Param("id") Long id);
 
 }
