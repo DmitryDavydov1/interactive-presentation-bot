@@ -5,17 +5,22 @@ import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
 import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
-import com.example.bot._for_shelter.models.Viewer;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
+import com.example.bot._for_shelter.models.User;
+import com.example.bot._for_shelter.repository.UserRepository;
 import com.example.bot._for_shelter.service.HelpService;
 import com.example.bot._for_shelter.service.TelegramBot;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -26,12 +31,16 @@ public class SendStatisticCommand implements Command {
     private final HelpService helpService;
     private final CustomWordCloud customWordCloud;
     private final TelegramBot telegramBot;
+    private static final Logger logger = LoggerFactory.getLogger(SendStatisticCommand.class);
+    private final SendBotMessage sendBotMessage;
+
 
     @Lazy
-    public SendStatisticCommand(HelpService helpService, SendBotMessage sendBotMessage, CreatorTheRoomRepository creatorTheRoomRepository, CustomWordCloud customWordCloud, TelegramBot telegramBot) {
+    public SendStatisticCommand(HelpService helpService, CustomWordCloud customWordCloud, TelegramBot telegramBot, SendBotMessage sendBotMessage) {
         this.helpService = helpService;
         this.customWordCloud = customWordCloud;
         this.telegramBot = telegramBot;
+        this.sendBotMessage = sendBotMessage;
     }
 
     @Override
@@ -41,25 +50,41 @@ public class SendStatisticCommand implements Command {
 
         Room room = helpService.findLastRoomWithoutCashing(chatId);
         List<Question> questions = room.getQuestions();
-        List<Viewer> viewers = room.getViewers();
+        List<User> users = room.getUsers();
 
-        StringBuilder statisticsMessage = new StringBuilder();
+
         for (Question question : questions) {
 
             //Получаем статистику по вопросу
             Map<String, Integer> statistic = question.getStatistic();
-            File fileWithCloudWord;
+            if (statistic.isEmpty()) {
+                SendMessage sendMessage = sendBotMessage.createMessage(update, "На вопрос номер " + (questions.indexOf(question) + 1) + " ноль ответов");
+                sendBotMessage.sendMessage(sendMessage);
+                logger.warn("На вопрос ноль ответов, комната {}", room.getId());
+                return;
+            }
+
+            ByteArrayOutputStream fileWithCloudWord;
             try {
                 fileWithCloudWord = customWordCloud.generateAndSendWordCloud(statistic);
-            } catch (IOException | TelegramApiException e) {
+            } catch (Exception e) {
+                logger.error("Ошибка при генерации изображения", e);
                 throw new RuntimeException(e);
             }
 
+            byte[] imageBytes = fileWithCloudWord.toByteArray();
 
-            //Отправляем статистику каждому гостю комнаты
-            for (Viewer viewer : viewers) {
-                telegramBot.SendPhoto(fileWithCloudWord, viewer.getChatId());
+            for (User user : users) {
+                if (!user.getChatId().equals(chatId)) {
+                    InputFile freshInputFile = new InputFile(new ByteArrayInputStream(imageBytes), "cloud.png");
+                    telegramBot.sendPhoto(freshInputFile, user.getChatId());
+                }
             }
+            InputFile creatorInputFile = new InputFile(new ByteArrayInputStream(imageBytes), "cloud.png");
+            telegramBot.sendPhoto(creatorInputFile, chatId);
+
+
+            logger.info("Успешно сгенерированы все изображения для комнаты: {}", room.getId());
         }
     }
 
@@ -69,3 +94,4 @@ public class SendStatisticCommand implements Command {
     }
 
 }
+

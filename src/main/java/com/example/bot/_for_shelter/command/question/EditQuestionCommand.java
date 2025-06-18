@@ -2,15 +2,22 @@ package com.example.bot._for_shelter.command.question;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.command.room.SendStatisticCommand;
 import com.example.bot._for_shelter.mark_ups.MarkUps;
 import com.example.bot._for_shelter.models.Condition;
 import com.example.bot._for_shelter.models.Question;
+import com.example.bot._for_shelter.models.Room;
 import com.example.bot._for_shelter.repository.ConditionRepository;
 import com.example.bot._for_shelter.repository.QuestionRepository;
+import com.example.bot._for_shelter.service.HelpService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+
 
 @Component
 public class EditQuestionCommand implements Command {
@@ -19,18 +26,32 @@ public class EditQuestionCommand implements Command {
     private final MarkUps markUps;
     private final SendBotMessage sendBotMessage;
     private final ConditionRepository conditionRepository;
+    private final HelpService helpService;
+    private static final Logger logger = LoggerFactory.getLogger(EditQuestionCommand.class);
 
     public EditQuestionCommand(QuestionRepository questionRepository, MarkUps markUps, SendBotMessage sendBotMessage,
-                               ConditionRepository conditionRepository) {
+                               ConditionRepository conditionRepository, HelpService helpService) {
         this.questionRepository = questionRepository;
         this.markUps = markUps;
         this.sendBotMessage = sendBotMessage;
         this.conditionRepository = conditionRepository;
+        this.helpService = helpService;
     }
 
     @Override
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
+
+        int length = update.getMessage().getText().length();
+        if (length > 100) {
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Твой вопрос слишком длинный");
+            sendBotMessage.sendMessage(sendMessage);
+
+            logger.warn("Слишком длинный вопрос от юзера: {}, длинною: {}", chatId, length);
+            return;
+        }
+        Room room = helpService.findLastRoom(chatId);
+
 
         // Получение условия
         Condition condition = conditionRepository.findByChatId(chatId).orElse(null);
@@ -48,8 +69,7 @@ public class EditQuestionCommand implements Command {
         }
 
         // Обновление текста вопроса
-        question.setText(update.getMessage().getText());
-        questionRepository.save(question);
+        editQuestion(update, question, room);
 
         // Создание клавиатуры для действий с вопросом
         InlineKeyboardMarkup markUp = markUps.questionActivitiesButton(Long.parseLong(parts[2]), update);
@@ -99,5 +119,11 @@ public class EditQuestionCommand implements Command {
             // Если не удается преобразовать id сообщений, логируем ошибку
             System.err.println("Ошибка при удалении сообщений: " + e.getMessage());
         }
+    }
+
+    @CacheEvict(value = "question", key = "#room.id")
+    public void editQuestion(Update update, Question question, Room room) {
+        question.setText(update.getMessage().getText());
+        questionRepository.save(question);
     }
 }

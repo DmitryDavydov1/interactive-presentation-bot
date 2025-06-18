@@ -55,7 +55,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
-        if (update.hasCallbackQuery()) {
+            if (update.hasCallbackQuery()) {
             commandList.stream()
                     .filter(command -> command.isSupport(update.getCallbackQuery().getData()))
                     .forEach(command -> {
@@ -89,10 +89,10 @@ public class TelegramBot extends TelegramLongPollingBot {
         return sentMessage.getMessageId();
     }
 
-    public void SendPhoto(File file, String chatId) {
+    public void sendPhoto(InputFile file, String chatId) {
         SendPhoto sendPhoto = new SendPhoto();
         sendPhoto.setChatId(chatId);
-        sendPhoto.setPhoto(new InputFile(file));
+        sendPhoto.setPhoto(file);
         try {
             execute(sendPhoto);
             System.out.println("Изображение отправлено в Telegram!");

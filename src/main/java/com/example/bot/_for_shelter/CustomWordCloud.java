@@ -3,14 +3,15 @@ package com.example.bot._for_shelter;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.List;
 
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 public class CustomWordCloud {
@@ -25,21 +26,23 @@ public class CustomWordCloud {
     private static final double FONT_INCREASE_FACTOR = 2.0;
     private static final double PULL_FACTOR = 0.3;
     private static final int PADDING = 2;
-
+    private static final Logger logger = LoggerFactory.getLogger(CustomWordCloud.class);
 
     private static final Color[] COLOR_PALETTE = {
-            new Color(74, 144, 226),
-            new Color(255, 107, 107),
-            new Color(80, 200, 120),
-            new Color(175, 122, 197),
-            new Color(255, 159, 67),
-            new Color(72, 201, 176),
-            new Color(247, 202, 201),
-            new Color(244, 208, 63),
-            new Color(26, 188, 156),
-            new Color(142, 68, 173)
+            new Color(0, 128, 255),    // Яркий синий
+            new Color(255, 77, 77),    // Яркий красный
+            new Color(0, 179, 136),    // Зеленый
+            new Color(153, 102, 204),  // Фиолетовый
+            new Color(255, 147, 0),    // Оранжевый
+            new Color(255, 102, 153),  // Розовый
+            new Color(0, 204, 204),    // Голубой
+            new Color(51, 51, 153),    // Темно-синий
+            new Color(255, 204, 0),    // Желтый
+            new Color(102, 204, 102)   // Светло-зеленый
     };
 
+    // Поле для кэширования шрифта
+    private Font customFont = null;
 
     static class Word {
         String text;
@@ -54,10 +57,33 @@ public class CustomWordCloud {
         }
     }
 
-    public File generateAndSendWordCloud(Map<String, Integer> wordFreq) throws IOException, TelegramApiException {
+    // Метод загрузки и кэширования шрифта
+    private Font loadCustomFont(float fontSize) {
+        if (customFont == null) {
+            try {
+                // Загружаем шрифт из ресурсов
+                InputStream fontStream = getClass().getResourceAsStream("/fonts/static/Montserrat-Regular.ttf");
+                if (fontStream == null) {
+                    throw new IOException("Шрифт не найден: /fonts/Montserrat-Regular.ttf");
+                }
+                customFont = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+                // Регистрируем шрифт в среде графики
+                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                ge.registerFont(customFont);
+                fontStream.close();
+            } catch (IOException | FontFormatException e) {
+                logger.error("Ошибка загрузки шрифта Montserrat: {}", e.getMessage());
+                // Запасной шрифт
+                customFont = new Font("SansSerif", Font.PLAIN, MIN_FONT_SIZE);
+            }
+        }
+        return customFont.deriveFont(fontSize);
+    }
+
+    public ByteArrayOutputStream generateAndSendWordCloud(Map<String, Integer> wordFreq) throws IOException {
         // Проверка входного словаря
         if (wordFreq == null || wordFreq.isEmpty()) {
-            System.err.println("Словарь пуст или равен null!");
+            logger.error("Словарь пуст или равен null!");
             return null;
         }
 
@@ -67,24 +93,14 @@ public class CustomWordCloud {
         double averageFreq = totalWords / (double) uniqueWords;
         int maxFreq = wordFreq.values().stream().max(Integer::compare).orElse(1);
         int minFreq = wordFreq.values().stream().min(Integer::compare).orElse(0);
-        System.out.println("Статистика слов:");
-        System.out.println("Общее количество слов (с учётом частот): " + totalWords);
-        System.out.println("Количество уникальных слов: " + uniqueWords);
-        System.out.println("Средняя частота слова: " + String.format("%.2f", averageFreq));
-        System.out.println("Максимальная частота: " + maxFreq);
-        System.out.println("Минимальная частота: " + minFreq);
-        System.out.println("Топ-5 слов по частоте:");
-        wordFreq.entrySet().stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-                .limit(5)
-                .forEach(entry -> System.out.println(entry.getKey() + ": " + entry.getValue()));
+
 
         // Преобразуем в список слов
         List<Word> words = new ArrayList<>();
         int wordCount = wordFreq.size();
         for (Map.Entry<String, Integer> entry : wordFreq.entrySet()) {
             String wordText = entry.getKey().toLowerCase();
-            if (wordText.length() >= 3) { // Игнорируем короткие слова
+            if (!wordText.isEmpty()) {
                 Word word = new Word(wordText, entry.getValue());
                 word.fontSize = MIN_FONT_SIZE + (int) ((double) entry.getValue() / maxFreq * (MAX_FONT_SIZE - MIN_FONT_SIZE));
                 words.add(word);
@@ -94,14 +110,13 @@ public class CustomWordCloud {
         // Сортируем слова по частоте
         words.sort((w1, w2) -> Integer.compare(w2.frequency, w1.frequency));
 
-
         // Адаптация параметров
         double spiralStep = BASE_SPIRAL_STEP;
         double spiralAngleStep = BASE_SPIRAL_ANGLE_STEP;
         if (wordCount > 50) {
             spiralStep *= 0.3;
             spiralAngleStep *= 0.3;
-            System.out.println("Много слов (" + wordCount + "): уменьшен шаг спирали до " + spiralStep);
+            logger.info("Много слов ({}): уменьшен шаг спирали до {}", wordCount, spiralStep);
         }
 
         // Создаём изображение
@@ -118,13 +133,13 @@ public class CustomWordCloud {
 
         // Размещение первого слова в центре
         if (words.isEmpty()) {
-            System.err.println("Нет слов для генерации облака после фильтрации!");
+            logger.error("Нет слов для генерации облака после фильтрации!");
             return null;
         }
 
         Word firstWord = words.get(0);
         firstWord.isVertical = false;
-        Font font = new Font("Arial", Font.PLAIN, firstWord.fontSize);
+        Font font = loadCustomFont(firstWord.fontSize);
         g2d.setFont(font);
         FontMetrics fm = g2d.getFontMetrics();
         int wordWidth = fm.stringWidth(firstWord.text);
@@ -142,11 +157,7 @@ public class CustomWordCloud {
             int fontSize = word.fontSize;
 
             while (!placed) {
-                try {
-                    font = new Font("Arial", Font.PLAIN, fontSize);
-                } catch (Exception e) {
-                    font = new Font("SansSerif", Font.PLAIN, fontSize);
-                }
+                font = loadCustomFont(fontSize);
                 g2d.setFont(font);
                 fm = g2d.getFontMetrics();
                 wordWidth = fm.stringWidth(word.text);
@@ -177,13 +188,13 @@ public class CustomWordCloud {
                     Rectangle rect = new Rectangle(x - w / 2, y - h / 2, w + PADDING, h + PADDING);
                     boolean collision = false;
 
+
                     for (Rectangle occ : occupied) {
                         if (rect.intersects(occ)) {
                             collision = true;
                             break;
                         }
                     }
-
 
                     if (!collision) {
                         double minDistToOccupied = Double.MAX_VALUE;
@@ -235,7 +246,7 @@ public class CustomWordCloud {
                         fontSize = MIN_FONT_SIZE;
                         spiralStep *= 0.7;
                         spiralAngleStep *= 0.7;
-                        System.out.println("Уменьшен шаг спирали до: " + spiralStep + " для слова: " + word.text);
+                        logger.info("Уменьшен шаг спирали до: {} для слова: {}", spiralStep, word.text);
                     }
                     word.fontSize = fontSize;
                 }
@@ -244,17 +255,16 @@ public class CustomWordCloud {
 
         g2d.dispose();
 
-        // Сохраняем изображение
-        File outputFile = new File("custom_wordcloud_aesthetic.png");
-        try {
-            ImageIO.write(image, "png", outputFile);
-            System.out.println("Облако слов сохранено в custom_wordcloud_aesthetic.png");
-        } catch (IOException e) {
-            System.err.println("Ошибка при сохранении изображения: " + e.getMessage());
-            return outputFile;
-        }
+        logger.info("Облако слов генерируется");
+        logger.info("Общее количество слов (с учётом частот): {}", totalWords);
+        logger.info("Количество уникальных слов: {}", uniqueWords);
+        logger.info("Средняя частота слова: {}", String.format("%.2f", averageFreq));
+        logger.info("Максимальная частота: {}", maxFreq);
+        logger.info("Минимальная частота: {}", minFreq);
 
-
-        return outputFile;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(image, "png", baos);
+        logger.info("Облако слов успешно сгенерировано");
+        return baos;
     }
 }

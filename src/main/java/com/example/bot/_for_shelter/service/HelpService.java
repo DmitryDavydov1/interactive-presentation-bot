@@ -1,9 +1,10 @@
 package com.example.bot._for_shelter.service;
 
-import com.example.bot._for_shelter.models.CreatorTheRoom;
+import com.example.bot._for_shelter.models.Question;
 import com.example.bot._for_shelter.models.Room;
-import com.example.bot._for_shelter.repository.CreatorTheRoomRepository;
+import com.example.bot._for_shelter.models.User;
 import com.example.bot._for_shelter.repository.RoomRepository;
+import com.example.bot._for_shelter.repository.UserRepository;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -15,47 +16,32 @@ import java.util.Random;
 public class HelpService {
 
     private final RoomRepository roomRepository;
-    private final CreatorTheRoomRepository creatorTheRoomRepository;
+    private final UserRepository userRepository;
 
-    public HelpService(RoomRepository roomRepository, CreatorTheRoomRepository creatorTheRoomRepository) {
+    public HelpService(RoomRepository roomRepository, UserRepository userRepository) {
         this.roomRepository = roomRepository;
-        this.creatorTheRoomRepository = creatorTheRoomRepository;
-    }
-
-    @Cacheable(value = "rooms", key = "#chatId")
-    public Room findLastRoom(String chatId) {
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        List<Room> rooms = creatorTheRoom.getRoom();
-
-
-        System.out.printf("%d rooms found\n", rooms.size());
-        return rooms.stream()
-                .filter(Room::isStatus) // Фильтруем по статусу
-                .findFirst().orElse(null);
+        this.userRepository = userRepository;
     }
 
     public Room findLastRoomWithoutCashing(String chatId) {
-        CreatorTheRoom creatorTheRoom = creatorTheRoomRepository.findByChatId(chatId);
-        List<Room> rooms = creatorTheRoom.getRoom();
-
-
-        System.out.printf("%d rooms found\n", rooms.size());
-        return rooms.stream()
-                .filter(Room::isStatus) // Фильтруем по статусу
-                .findFirst().orElse(null);
+        User user = userRepository.findByChatId(chatId).orElse(null);
+        assert user != null;
+        return roomRepository.findRoomsByCreatorId(user.getId());
     }
 
 
-    @Cacheable(value = "entrance-the-room", key = "#id", unless = "#result == null")
-    public Room findRoomByIdForEntry(long id) {
-        System.out.println("Fetching room from DB: " + id);
-        return roomRepository.findByIdForEntry(id).orElse(null);
+    @Cacheable(value = "rooms", key = "#chatId")
+    public Room findLastRoom(String chatId) {
+        User user = userRepository.findByChatId(chatId).orElse(null);
+        assert user != null;
+        return roomRepository.findRoomsByCreatorId(user.getId());
     }
 
-    @CachePut(value = "rooms", key = "#creatorTheRoom.chatId")
-    public Room updateRoom(CreatorTheRoom creatorTheRoom) {
+
+    @CachePut(value = "rooms", key = "#user.chatId")
+    public Room updateRoom(User user) {
         Room room = new Room();
-        room.setCreatorTheRoom(creatorTheRoom);
+        room.setCreatorRoom(user);
         room.setStatus(true);
         room.setQuestionStatus(true);
         room.setAnswerStatus(true);
@@ -66,13 +52,29 @@ public class HelpService {
         return room;
     }
 
+
+    @Cacheable(value = "entrance-the-room", key = "#id", unless = "#result == null")
+    public Room findRoomByIdForEntry(long id) {
+        System.out.println("Fetching room from DB: " + id);
+        return roomRepository.findByIdForEntry(id).orElse(null);
+    }
+
+
     private int makeRandomNumber() {
         Random random = new Random();
-        int randomNumber = random.nextInt(1000) + 1;
+        int randomNumber = random.nextInt(1000000) + 1;
         while (roomRepository.existsByIdForEntry(randomNumber)) {
-            randomNumber = random.nextInt(1000) + 1;
+            randomNumber = random.nextInt(1000000) + 1;
         }
         return randomNumber;
     }
+
+    @Cacheable(value = "questions", key = "#room.id")
+    public List<Question> getQuestionsByRoom(Room room) {
+        return room.getQuestions();
+    }
+
+
+
 
 }

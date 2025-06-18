@@ -2,9 +2,13 @@ package com.example.bot._for_shelter.command.viewer;
 
 import com.example.bot._for_shelter.command.Command;
 import com.example.bot._for_shelter.command.SendBotMessage;
+import com.example.bot._for_shelter.command.room.SendStatisticCommand;
 import com.example.bot._for_shelter.models.*;
 import com.example.bot._for_shelter.repository.*;
+import com.example.bot._for_shelter.service.HelpService;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -19,18 +23,22 @@ public class AnswerTheQuestionCommand implements Command {
 
     private final AnswerRepository answerRepository;
     private final ConditionRepository conditionRepository;
-    private final ViewerRepository viewerRepository;
     private final RoomRepository roomRepository;
     private final SendBotMessage sendBotMessage;
+    private final UserRepository userRepository;
+    private final HelpService helpService;
+    private static final Logger logger = LoggerFactory.getLogger(AnswerTheQuestionCommand.class);
+
 
     public AnswerTheQuestionCommand(AnswerRepository answerRepository, ConditionRepository conditionRepository,
-                                    ViewerRepository viewerRepository, RoomRepository roomRepository,
-                                    SendBotMessage sendBotMessage) {
+                                    RoomRepository roomRepository,
+                                    SendBotMessage sendBotMessage, UserRepository userRepository, HelpService helpService) {
         this.answerRepository = answerRepository;
         this.conditionRepository = conditionRepository;
-        this.viewerRepository = viewerRepository;
         this.roomRepository = roomRepository;
         this.sendBotMessage = sendBotMessage;
+        this.userRepository = userRepository;
+        this.helpService = helpService;
     }
 
     @Override
@@ -38,6 +46,17 @@ public class AnswerTheQuestionCommand implements Command {
     public void execute(Update update) {
         String chatId = String.valueOf(update.getMessage().getChatId());
         String answerText = update.getMessage().getText();
+
+
+        int length = answerText.length();
+        if (length > 20) {
+            SendMessage sendMessage = sendBotMessage.createMessage(update, "Твой ответ слишком длинный");
+            sendBotMessage.sendMessage(sendMessage);
+
+            logger.warn("Слишком длинный ответ от юзера: {}, длинною: {}", chatId, length);
+            return;
+        }
+
 
         // Получение текущего состояния из базы
         Optional<Condition> conditionOpt = conditionRepository.findByChatId(chatId);
@@ -54,7 +73,7 @@ public class AnswerTheQuestionCommand implements Command {
             return;
         }
 
-        List<Question> questions = roomOpt.get().getQuestions();
+        List<Question> questions = helpService.getQuestionsByRoom(roomOpt.get());
         int currentQuestionIndex = Integer.parseInt(conditionParts[4]);
 
         // Сохранение ответа
@@ -73,13 +92,13 @@ public class AnswerTheQuestionCommand implements Command {
 
     // Метод для сохранения ответа
     private void saveAnswer(String chatId, int questionIndex, List<Question> questions, String answerText) {
-        Viewer viewer = viewerRepository.findByChatId(chatId);
+        User user = userRepository.findByChatId(chatId).orElse(null);
         Question question = questions.get(questionIndex);
 
         Answer answer = new Answer();
         answer.setAnswer(answerText);
         answer.setQuestion(question);
-        answer.setViewer(viewer);
+        answer.setUser(user);
         answerRepository.save(answer);
     }
 

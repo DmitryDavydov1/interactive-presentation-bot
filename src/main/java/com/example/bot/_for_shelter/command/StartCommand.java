@@ -21,7 +21,7 @@ public class StartCommand implements Command {
     public void execute(Update update) {
         SendMessage message = new SendMessage();
         message.setChatId(update.getMessage().getChatId().toString());
-        InlineKeyboardMarkup startButton = markUps.startButton();
+        InlineKeyboardMarkup startButton = markUps.startMenuButton();
         message.setReplyMarkup(startButton);
         message.setText("Выберите роль");
         sendBotMessage.sendMessage(message);
